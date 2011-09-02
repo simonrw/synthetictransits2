@@ -63,6 +63,12 @@ class Fits
             }
         }
 
+        const string hduname()
+        {
+            char buf[FLEN_VALUE];
+            fits_read_key(this->m_fptr, TSTRING, "EXTNAME", buf, NULL, &this->m_status);
+            return string(buf);
+        }
 
 
 
