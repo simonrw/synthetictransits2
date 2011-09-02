@@ -21,7 +21,7 @@ struct Model
     double i;
     double rs;
     double rp;
-    double ms;
+    double mstar;
     double c1, c2, c3, c4;
     double teff;
 };
