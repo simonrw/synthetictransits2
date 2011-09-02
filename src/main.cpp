@@ -53,6 +53,19 @@ class Fits
         fitsfile **fptr() { return &this->m_fptr; }
         int &status() { return this->m_status; }
 
+        static void check(int status)
+        {
+            if (status)
+            {
+                char buf[FLEN_STATUS];
+                fits_get_errstatus(status, buf);
+                throw runtime_error(buf);
+            }
+        }
+
+
+
+
     protected:
         fitsfile *m_fptr;
         int m_status;
