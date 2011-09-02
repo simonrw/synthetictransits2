@@ -5,6 +5,8 @@
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
 #include <sstream>
+#include <iomanip>
+#include <fstream>
 
 /* Local includes */
 #include "timer.h"
@@ -305,11 +307,12 @@ int main(int argc, char *argv[])
         into(Current.c4), into(Current.teff);
 
 
+        int counter = 0;
+        ofstream debugfile("debug.txt");
         while (st.exec())
         {
             if (Current.submodel_id != NullSubIndex)
             {
-                //cout << "Submodel required" << endl;
             }
 
             /* Generate the add model */
@@ -330,6 +333,13 @@ int main(int argc, char *argv[])
 
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
+            
+            for (int i=0; i<ModelFlux.size(); ++i)
+            {
+                debugfile << counter << " " << Current.period << " " << setprecision(15) << Current.epoch << " " << Current.rp << " " << Current.rs << " " << setprecision(15) << jd[i] << " " << ModelFlux[i] << endl;
+            }
+            
+            ++counter;
         }
 
 
