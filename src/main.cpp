@@ -134,7 +134,19 @@ int main(int argc, char *argv[])
         cout << nhdus << " hdus found" << endl;
 
 
-        const int nextra = 100;
+        /* Open the sqlite3 database here */
+        sqlitepp::session conn(candidates_arg.getValue());
+        sqlitepp::statement st(conn);
+
+        /* get the required number of new objects */
+        int nextra = 0;
+        st << "select count(*) from addmodels", sqlitepp::into(nextra);
+        if (!st.exec())
+        {
+            throw runtime_error("No input models found");
+        }
+
+        cout << "Inserting " << nextra << " extra models" << endl;
 
 
         for (int hdu=2; hdu<=nhdus; ++hdu)
