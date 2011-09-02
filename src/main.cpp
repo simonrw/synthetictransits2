@@ -268,6 +268,16 @@ int main(int argc, char *argv[])
             into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
             into(Current.c4), into(Current.teff);
 
+        /* Get a list of the objects in the file */
+        list<string> ObjectNames;
+        infile.moveHDU("CATALOGUE");
+
+        int obj_id_colno = -1;
+        fits_get_colnum(*infile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colno, &infile.status());
+        infile.check();
+
+        /* Read the data in as strings */
+
         while (st.exec())
         {
             if (Current.submodel_id != NullSubIndex)
