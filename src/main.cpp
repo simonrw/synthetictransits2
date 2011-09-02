@@ -120,6 +120,7 @@ int main(int argc, char *argv[])
 
         Timer ts;
         ts.start("all");
+        ts.start("copy");
 
         Fits infile(filename_arg.getValue());
         NewFits outfile("!" + output_arg.getValue());
@@ -203,6 +204,7 @@ int main(int argc, char *argv[])
         }
 
 
+        ts.stop("copy");
 
 
 
