@@ -9,38 +9,46 @@
 
 using namespace std;
 
-struct Fits
+class Fits
 {
-    fitsfile *fptr;
-    int status;
-    string filename;
-    Fits(const string &filename)
-        : status(0), filename(filename)
-    {
-        fits_open_file(&fptr, filename.c_str(), READWRITE, &status);
-        check();
-    }
-
-
-    virtual ~Fits()
-    {
-        fits_close_file(fptr, &status);
-        check();
-    }
-
-    void check()
-    {
-        if (status)
+    public:
+        Fits(const string &filename)
+            : m_status(0), m_filename(filename)
         {
-            throw runtime_error("Error with fitsio");
+            fits_open_file(&this->m_fptr, this->m_filename.c_str(), READWRITE, &this->m_status);
+            check();
         }
-    }
 
-    void moveHDU(const string &hduname)
-    {
-        fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(hduname.c_str()), 0, &status);
-        check();
-    }
+
+        virtual ~Fits()
+        {
+            fits_close_file(this->m_fptr, &this->m_status);
+            check();
+        }
+
+        void check()
+        {
+            if (this->m_status)
+            {
+                throw runtime_error("Error with fitsio");
+            }
+        }
+
+        void moveHDU(const string &hduname)
+        {
+            fits_movnam_hdu(this->m_fptr, ANY_HDU, const_cast<char*>(hduname.c_str()), 0, &this->m_status);
+            check();
+        }
+
+        fitsfile **fptr() { return &this->m_fptr; }
+        int &status() { return this->m_status; }
+
+    protected:
+        fitsfile *m_fptr;
+        int m_status;
+        string m_filename;
+
+
 };
 
 template <typename T>
