@@ -5,6 +5,8 @@
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
 #include <sstream>
+#include <iomanip>
+#include <fstream>
 
 /* Local includes */
 #include "timer.h"
@@ -109,12 +111,19 @@ class NewFits : public Fits
     }
 };
 
-template <typename T>
-void CopyImageData(Fits &infile, Fits &outfile, float MemLimit)
+long indexOf(const vector<string> &stringlist, const string &comp)
 {
+    for (int i=0; i<stringlist.size(); ++i)
+    {
+        if (stringlist.at(i) == comp)
+        {
+            return i;
+        }
+    }
+
+    /* If the loop gets here the object is not found */
+    throw runtime_error("Cannot find object");
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -261,23 +270,85 @@ int main(int argc, char *argv[])
         Model Current;
         const int NullSubIndex = -1;
 
+
+        /* Get a list of the objects in the file */
+        vector<string> ObjectNames;
+        infile.moveHDU("CATALOGUE");
+
+        int obj_id_colno = -1;
+        fits_get_colnum(*infile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colno, &infile.status());
+        infile.check();
+
+        /* Read the data in as strings */
+        int dispwidth;
+        fits_get_col_display_width(*infile.fptr(), obj_id_colno, &dispwidth, &infile.status());
+
+        long nrows;
+        fits_get_num_rows(*infile.fptr(), &nrows, &infile.status());
+
+        vector<char*> cstrnames(nrows);
+        for (int i=0; i<nrows; ++i) cstrnames[i] = new char[dispwidth+1];
+        fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
+
+        for (int i=0; i<nrows; ++i)
+        {
+            string CurrentName = cstrnames[i];
+            /* Remove all whitespace */
+            CurrentName.erase(remove_if(CurrentName.begin(), CurrentName.end(), ::isspace), CurrentName.end());
+            ObjectNames.push_back(CurrentName);
+            delete[] cstrnames[i];
+        }
+
         /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
         st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
-            " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
-            into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
-            into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
-            into(Current.c4), into(Current.teff);
+        " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
+        into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
+        into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
+        into(Current.c4), into(Current.teff);
 
+
+        int counter = 0;
+        ofstream debugfile("debug.txt");
         while (st.exec())
         {
+            /* Location to write the data to */
+            const long OutputIndex = nrows + counter;
+            
             if (Current.submodel_id != NullSubIndex)
             {
-                //cout << "No submodel needed" << endl;
             }
-            else
+
+            /* Generate the add model */
+            /* Need to get the time array */
+            outfile.moveHDU("HJD");
+
+            /* Need to get the image dimensions */
+            long naxes[2];
+            fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
+            outfile.check();
+
+            /* Get the index of the original lightcurve */
+            long SourceIndex = indexOf(ObjectNames, Current.name);
+
+
+            vector<double> jd(naxes[0]);
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &jd[0], 0, &outfile.status());
+
+            /* Now get the addition model */
+            vector<double> ModelFlux = GenerateSynthetic(jd, Current);
+            
+            /* Try writing the model to the flux hdu */
+            outfile.moveHDU("FLUX");
+            
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &ModelFlux[0], &outfile.status());
+            outfile.check();
+            
+            for (int i=0; i<ModelFlux.size(); ++i)
             {
-                //cout << "Submodel required" << endl;
+                debugfile << counter << " " << Current.period << " " << setprecision(15) << Current.epoch << " " << Current.rp << " " << Current.rs << " " << setprecision(15) << jd[i] << " " << ModelFlux[i] << endl;
             }
+            
+            ++counter;
         }
 
 
