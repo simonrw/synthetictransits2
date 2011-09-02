@@ -1,8 +1,25 @@
 #include "GenerateModel.h"
+#include <cmath>
+#include <iostream>
+#include <vector>
+#include <algorithm>
 #include "Model.h"
 #include "constants.h"
 
 using namespace std;
+
+namespace
+{
+    inline double calcOmega(const vector<double> &coeffs)
+    {
+        double returnval;
+        for (int n=0; n<=4; ++n)
+        {
+            returnval += coeffs.at(n) / (n + 4.);
+        }
+        return returnval;
+    }
+}
 
 vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 {
