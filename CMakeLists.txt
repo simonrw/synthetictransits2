@@ -20,9 +20,14 @@ include_directories(
 
 set(SRCS 
     ${${TARGET}_SOURCE_DIR}/src/main.cpp
+    ${${TARGET}_SOURCE_DIR}/src/timer.C
     )
 
-add_executable(${TARGET} ${SRCS})
+set(HDRS
+    ${${TARGET}_SOURCE_DIR}/include/timer.h
+    )
+
+add_executable(${TARGET} ${SRCS} ${HDRS})
 
 target_link_libraries(
     ${TARGET}
