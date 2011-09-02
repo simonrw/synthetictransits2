@@ -300,11 +300,11 @@ int main(int argc, char *argv[])
         {
             if (Current.submodel_id != NullSubIndex)
             {
-                //cout << "No submodel needed" << endl;
+                //cout << "Submodel required" << endl;
             }
             else
             {
-                //cout << "Submodel required" << endl;
+                //cout << "No submodel needed" << endl;
             }
         }
 
