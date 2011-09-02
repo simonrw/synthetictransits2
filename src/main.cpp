@@ -67,6 +67,11 @@ class NewFits : public Fits
 
         fits_create_file(&this->m_fptr, filename.c_str(), &this->m_status);
         this->check();
+
+        /* Ensure the basic keywords are there */
+        long naxes[] = {0, 0};
+        fits_create_img(this->m_fptr, BYTE_IMG, 0, naxes, &this->m_status);
+        this->check();
     }
 };
 
