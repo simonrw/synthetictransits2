@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 #include <stdexcept>
 #include <sqlitepp/sqlitepp.hpp>
 #include <fitsio.h>
@@ -220,12 +221,35 @@ int main(int argc, char *argv[])
 
                 if (hduname == "CATALOGUE")
                 {
+                    /* Need to add extra columns */
+                    int ncols = 0;
+                    fits_get_num_cols(*outfile.fptr(), &ncols, &outfile.status());
+                    outfile.check();
+
+                    cout << ", " << ncols << " columms";
+
                     /* Append extra rows */
 
                     fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
                     outfile.check();
 
                     cout << " -> " << nrows + nextra << " rows";
+
+                    /* Need 9 extra columns */
+
+                    char *ColumnNames[] = {"SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
+                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1J", "1D", "1D", "1D", "1D"};
+
+                    size_t nNewCols = sizeof(ColumnNames) / sizeof(char*);
+                    assert((sizeof(ColumnFormats) / sizeof(char*)) == nNewCols);
+
+                    fits_insert_cols(*outfile.fptr(), ncols + 1, nNewCols, ColumnNames, ColumnFormats, &outfile.status());
+                    outfile.check();
+
+                    fits_get_num_cols(*outfile.fptr(), &ncols, &outfile.status());
+                    outfile.check();
+
+                    cout << ", " << ncols << " columms";
 
 
                 }
