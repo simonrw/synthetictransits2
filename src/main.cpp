@@ -277,6 +277,24 @@ int main(int argc, char *argv[])
         infile.check();
 
         /* Read the data in as strings */
+        int dispwidth;
+        fits_get_col_display_width(*infile.fptr(), obj_id_colno, &dispwidth, &infile.status());
+
+        long nrows;
+        fits_get_num_rows(*infile.fptr(), &nrows, &infile.status());
+
+        vector<char*> cstrnames(nrows);
+        for (int i=0; i<nrows; ++i) cstrnames[i] = new char[dispwidth+1];
+        fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
+
+        for (int i=0; i<nrows; ++i)
+        {
+            string CurrentName = cstrnames[i];
+            /* Remove all whitespace */
+            CurrentName.erase(remove_if(CurrentName.begin(), CurrentName.end(), ::isspace), CurrentName.end());
+            ObjectNames.push_back(CurrentName);
+            delete[] cstrnames[i];
+        }
 
         while (st.exec())
         {
