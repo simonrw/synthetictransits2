@@ -100,82 +100,82 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
     double angFreq = 2. * M_PI / (m.period * secondsInDay);
     cout << "Angular frequency: " << angFreq << " rad per sec" << endl;
 
-    //[> get the cosine of the inclination <]
+    ///* get the cosine of the inclination */
     double cosi = cos(m.i * radiansInDegree);
 
     const double p = (m.rp * rJup) / (m.rs * rSun);
 
-    //for (unsigned int i=0; i<Time.size(); ++i)
-    //{
-        //double t = Time.at(i);
+    for (unsigned int i=0; i<jd.size(); ++i)
+    {
+        /* Seconds since epoch */
+        double t = (jd.at(i) - m.epoch) * secondsInDay;
 
-        //[> get the normalised device coordinates <]
-        //double firstTerm = square(sin(angFreq * t));
-        //double secondTerm = square(cosi * cos(angFreq * t));
-
-
-
-
-        //double z = normalisedDistance * sqrt(firstTerm + secondTerm);
-
-        //double intpart;
-        //double phase = fabs(modf(t  / period , &intpart));
-        //phase = phase > 0.5 ? phase - 1.0 : phase;
-
-        //double F = 0;
-
-        //[> Hack to make sure the secondary eclipse is not created <]
-        //if ((phase > -0.25) && (phase < 0.25))
-        //{
+        /* get the normalised device coordinates */
+        double firstTerm = square(sin(angFreq * t));
+        double secondTerm = square(cosi * cos(angFreq * t));
 
 
-            //if (z <= 1 - p)
-            //{
-                //F = 0.;
-                ////F = 1. - square(p);
-                //double norm = 1. / (4. * z * p);
-                //double integral = IntegratedI(dr, coeffs, z-p, z+p);
-                //integral *= norm;
-                //F = 1. - (square(p) * integral / 4. / omega);
-            //}
-            //else if (z > 1 + p)
-            //{
-                //F = 1.;
-            //}
-            //else
-            //{
-                //double startPoint = z - p;
-                //double a = square(startPoint);
-                //double norm = 1./(1 - a);
 
-                //[> Integrate the I*(z) function from startPoint to 1 <]
-                //double integral = IntegratedI(dr, coeffs, startPoint, 1.);
-                //integral *= norm;
 
-                //double insideSqrt = square(p) - square(z - 1.);
-                //double sqrtVal = sqrt(insideSqrt);
-                //sqrtVal *= (z - 1.);
+        double z = normalisedDistance * sqrt(firstTerm + secondTerm);
 
-                //double insideAcos = (z - 1.) / p;
-                //double firstTerm = square(p) * acos(insideAcos);
+        double intpart;
+        double phase = fabs(modf(t  / (m.period * secondsInDay) , &intpart));
+        phase = phase > 0.5 ? phase - 1.0 : phase;
 
-                //F = 1. - (integral * (firstTerm - sqrtVal) / (4. * M_PI * omega));
-            //}
+        double F = 0;
 
-        //}
-        //else
-        //{
-            //F = 1.;
-        //}
+        /* Hack to make sure the secondary eclipse is not created */
+        if ((phase > -0.25) && (phase < 0.25))
+        {
 
-        //[> add the noise <]
-        //F += noise * randGenerator.dev();
 
-        //[> append the data to the vectors <]
+            if (z <= 1 - p)
+            {
+                F = 0.;
+                //F = 1. - square(p);
+                double norm = 1. / (4. * z * p);
+                double integral = IntegratedI(dr, coeffs, z-p, z+p);
+                integral *= norm;
+                F = 1. - (square(p) * integral / 4. / omega);
+            }
+            else if (z > 1 + p)
+            {
+                F = 1.;
+            }
+            else
+            {
+                double startPoint = z - p;
+                double a = square(startPoint);
+                double norm = 1./(1 - a);
+
+                /* Integrate the I*(z) function from startPoint to 1 */
+                double integral = IntegratedI(dr, coeffs, startPoint, 1.);
+                integral *= norm;
+
+                double insideSqrt = square(p) - square(z - 1.);
+                double sqrtVal = sqrt(insideSqrt);
+                sqrtVal *= (z - 1.);
+
+                double insideAcos = (z - 1.) / p;
+                double firstTerm = square(p) * acos(insideAcos);
+
+                F = 1. - (integral * (firstTerm - sqrtVal) / (4. * M_PI * omega));
+            }
+
+        }
+        else
+        {
+            F = 1.;
+        }
+
+
+        ///* append the data to the vectors */
         //lc.jd[i] = t / secondsInDay + midpoint;
         //lc.flux[i] = F;
+        Flux.push_back(F);
 
-    //}
+    }
     ////outfile.close();
 
     //lc.radius = rPlan / rJup;
