@@ -43,6 +43,13 @@ class Fits
             this->check();
         }
 
+        void moveHDU(int hdunum)
+        {
+            int hdutype;
+            fits_movabs_hdu(this->m_fptr, hdunum, &hdutype, &this->m_status);
+            this->check();
+        }
+
         fitsfile **fptr() { return &this->m_fptr; }
         int &status() { return this->m_status; }
 
