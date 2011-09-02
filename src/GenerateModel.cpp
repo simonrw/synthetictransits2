@@ -25,11 +25,21 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 {
     /* All values are in normalised units so have to scale always */
     
-    //double normalisedDistance = semi / rStar;
-    //cout << "Normalisation constant: " << normalisedDistance << endl;
-    //double omega = calcOmega(coeffs);
-    //double angFreq = 2. * M_PI / period;
-    //cout << "Angular frequency: " << angFreq << " rad per sec" << endl;
+    double normalisedDistance = m.a * AU / (m.rs * rSun);
+    cout << "Normalisation constant: " << normalisedDistance << endl;
+
+    /* Package the coefficients into a vector */
+    vector<double> coeffs(5);
+    coeffs[1] = m.c1;
+    coeffs[2] = m.c2;
+    coeffs[3] = m.c3;
+    coeffs[4] = m.c4;
+    coeffs[0] = 1. - coeffs[1] - coeffs[2] - coeffs[3] - coeffs[4];
+
+
+    double omega = calcOmega(coeffs);
+    double angFreq = 2. * M_PI / (m.period * secondsInDay);
+    cout << "Angular frequency: " << angFreq << " rad per sec" << endl;
 
     //[> get the cosine of the inclination <]
     //double cosi = cos(inclination);
