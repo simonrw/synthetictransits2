@@ -109,8 +109,19 @@ class NewFits : public Fits
     }
 };
 
+long indexOf(const vector<string> &stringlist, const string &comp)
 {
+    for (int i=0; i<stringlist.size(); ++i)
+    {
+        if (stringlist.at(i) == comp)
+        {
+            return i;
+        }
+    }
 
+    /* If the loop gets here the object is not found */
+    throw runtime_error("Cannot find object");
+}
 
 int main(int argc, char *argv[])
 {
