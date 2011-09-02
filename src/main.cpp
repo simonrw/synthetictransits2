@@ -237,9 +237,24 @@ int main(int argc, char *argv[])
 
         /* File copy finished */
 
+        ts.start("model.iterate");
+        Model Current;
+
         /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
+        st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
+            " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
+            into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
+            into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
+            into(Current.c4), into(Current.teff);
+
+        while (st.exec())
+        {
+        }
 
 
+        cout << counter << " iterations" << endl;
+
+        ts.stop("model.iterate");
 
         ts.stop("all");
         return 0;
