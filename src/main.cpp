@@ -246,6 +246,7 @@ int main(int argc, char *argv[])
 
         ts.start("model.iterate");
         Model Current;
+        const int NullSubIndex = -1;
 
         /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
         st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
@@ -256,6 +257,14 @@ int main(int argc, char *argv[])
 
         while (st.exec())
         {
+            if (Current.submodel_id != NullSubIndex)
+            {
+                cout << "No submodel needed" << endl;
+            }
+            else
+            {
+                cout << "Submodel required" << endl;
+            }
         }
 
 
