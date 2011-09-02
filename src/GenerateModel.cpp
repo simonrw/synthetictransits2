@@ -45,7 +45,7 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
     //[> get the cosine of the inclination <]
     double cosi = cos(m.i * radiansInDegree);
 
-    //const double p = rPlan / rStar;
+    const double p = (m.rp * rJup) / (m.rs * rSun);
 
     //[> set up the random number generator <]
     //Normaldev_BM randGenerator(0., 1., time(NULL));
