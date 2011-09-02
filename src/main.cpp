@@ -40,6 +40,12 @@ struct Fits
     }
 };
 
+template <typename T>
+void CopyImageData(Fits &infile, Fits &outfile, float MemLimit)
+{
+}
+
+
 
 int main(int argc, char *argv[])
 {
