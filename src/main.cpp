@@ -311,6 +311,20 @@ int main(int argc, char *argv[])
             }
 
             /* Generate the add model */
+            /* Need to get the time array */
+            outfile.moveHDU("HJD");
+
+            /* Need to get the image dimensions */
+            long naxes[2];
+            fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
+            outfile.check();
+
+            /* Get the index of the original lightcurve */
+            long SourceIndex = indexOf(ObjectNames, Current.name);
+
+
+            vector<double> jd(naxes[0]);
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &jd[0], 0, &outfile.status());
         }
 
 
