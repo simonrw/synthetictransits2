@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
             into(Current.c4), into(Current.teff);
 
         /* Get a list of the objects in the file */
-        list<string> ObjectNames;
+        vector<string> ObjectNames;
         infile.moveHDU("CATALOGUE");
 
         int obj_id_colno = -1;
