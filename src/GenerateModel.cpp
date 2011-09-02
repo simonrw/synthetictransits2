@@ -43,7 +43,7 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
     cout << "Angular frequency: " << angFreq << " rad per sec" << endl;
 
     //[> get the cosine of the inclination <]
-    //double cosi = cos(inclination);
+    double cosi = cos(m.i * radiansInDegree);
 
     //const double p = rPlan / rStar;
 
