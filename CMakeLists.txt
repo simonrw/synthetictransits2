@@ -21,10 +21,13 @@ include_directories(
 set(SRCS 
     ${${TARGET}_SOURCE_DIR}/src/main.cpp
     ${${TARGET}_SOURCE_DIR}/src/timer.C
+    ${${TARGET}_SOURCE_DIR}/src/GenerateModel.cpp
     )
 
 set(HDRS
     ${${TARGET}_SOURCE_DIR}/include/timer.h
+    ${${TARGET}_SOURCE_DIR}/include/Model.h
+    ${${TARGET}_SOURCE_DIR}/include/GenerateModel.h
     )
 
 add_executable(${TARGET} ${SRCS} ${HDRS})

@@ -5,28 +5,17 @@
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
 #include <sstream>
+
+/* Local includes */
 #include "timer.h"
+#include "GenerateModel.h"
+#include "Model.h"
 
 
 
 using namespace std;
 using namespace sqlitepp;
 
-struct Model
-{
-    int id;
-    string name;
-    int submodel_id;
-    double period;
-    double epoch;
-    double a;
-    double i;
-    double rs;
-    double rp;
-    double mstar;
-    double c1, c2, c3, c4;
-    double teff;
-};
 
 class Fits
 {
