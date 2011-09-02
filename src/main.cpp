@@ -9,6 +9,7 @@
 
 
 using namespace std;
+using namespace sqlitepp;
 
 struct Model
 {
@@ -151,12 +152,12 @@ int main(int argc, char *argv[])
 
 
         /* Open the sqlite3 database here */
-        sqlitepp::session conn(candidates_arg.getValue());
-        sqlitepp::statement st(conn);
+        session conn(candidates_arg.getValue());
+        statement st(conn);
 
         /* get the required number of new objects */
         int nextra = 0;
-        st << "select count(*) from addmodels", sqlitepp::into(nextra);
+        st << "select count(*) from addmodels", into(nextra);
         if (!st.exec())
         {
             throw runtime_error("No input models found");
