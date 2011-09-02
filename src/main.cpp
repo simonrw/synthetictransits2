@@ -113,11 +113,16 @@ int main(int argc, char *argv[])
 {
     try
     {
+        TCLAP::CmdLine cmd("");
+        TCLAP::UnlabeledValueArg<string> filename_arg("file", "File", true, "", "Fits file", cmd);
+        TCLAP::ValueArg<string> output_arg("o", "output", "Output file", false, "output.fits", "Fits file", cmd);
+        cmd.parse(argc, argv);
+
         Timer ts;
         ts.start("all");
 
-        Fits infile("../data.fits");
-        NewFits outfile("!output.fits");
+        Fits infile(filename_arg.getValue());
+        NewFits outfile("!" + output_arg.getValue());
 
         /* Start by getting file information from the input */
         int nhdus = 0;
@@ -192,6 +197,10 @@ int main(int argc, char *argv[])
 
         ts.stop("all");
         return 0;
+    }
+    catch (TCLAP::ArgException &e)
+    {
+        cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
     }
     catch (std::exception &e)
     {
