@@ -67,6 +67,7 @@ class Fits
         {
             char buf[FLEN_VALUE];
             fits_read_key(this->m_fptr, TSTRING, "EXTNAME", buf, NULL, &this->m_status);
+            this->check();
             return string(buf);
         }
 
