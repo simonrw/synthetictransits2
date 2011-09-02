@@ -13,8 +13,9 @@ struct Fits
 {
     fitsfile *fptr;
     int status;
+    string filename;
     Fits(const string &filename)
-        : status(0)
+        : status(0), filename(filename)
     {
         fits_open_file(&fptr, filename.c_str(), READWRITE, &status);
         check();
