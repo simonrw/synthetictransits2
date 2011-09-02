@@ -302,10 +302,8 @@ int main(int argc, char *argv[])
             {
                 //cout << "Submodel required" << endl;
             }
-            else
-            {
-                //cout << "No submodel needed" << endl;
-            }
+
+            /* Generate the add model */
         }
 
 
