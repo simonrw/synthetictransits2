@@ -26,6 +26,7 @@ set(SRCS
 
 set(HDRS
     ${${TARGET}_SOURCE_DIR}/include/timer.h
+    ${${TARGET}_SOURCE_DIR}/include/constants.h
     ${${TARGET}_SOURCE_DIR}/include/Model.h
     ${${TARGET}_SOURCE_DIR}/include/GenerateModel.h
     )

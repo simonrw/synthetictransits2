@@ -1,5 +1,6 @@
 #include "GenerateModel.h"
 #include "Model.h"
+#include "constants.h"
 
 using namespace std;
 
