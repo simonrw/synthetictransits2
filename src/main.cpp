@@ -311,6 +311,9 @@ int main(int argc, char *argv[])
         ofstream debugfile("debug.txt");
         while (st.exec())
         {
+            /* Location to write the data to */
+            const long OutputIndex = nrows + counter;
+            
             if (Current.submodel_id != NullSubIndex)
             {
             }
@@ -333,6 +336,12 @@ int main(int argc, char *argv[])
 
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
+            
+            /* Try writing the model to the flux hdu */
+            outfile.moveHDU("FLUX");
+            
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &ModelFlux[0], &outfile.status());
+            outfile.check();
             
             for (int i=0; i<ModelFlux.size(); ++i)
             {
