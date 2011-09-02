@@ -118,6 +118,78 @@ int main(int argc, char *argv[])
 
         Fits infile("../data.fits");
         NewFits outfile("!output.fits");
+
+        /* Start by getting file information from the input */
+        int nhdus = 0;
+        fits_get_num_hdus(*infile.fptr(), &nhdus, &infile.status());
+        infile.check();
+
+        cout << nhdus << " hdus found" << endl;
+
+
+        const int nextra = 100;
+
+
+        for (int hdu=2; hdu<=nhdus; ++hdu)
+        {
+            int status = 0;
+            infile.moveHDU(hdu);
+
+            /* Copy the data and header across */
+            fits_copy_hdu(*infile.fptr(), *outfile.fptr(), 0, &status);
+
+            /* Get the hdu type */
+            int hdutype = 0;
+            fits_get_hdu_type(*outfile.fptr(), &hdutype, &outfile.status());
+            outfile.check();
+
+            /* If an image hdu is found then just resize it */
+            if (hdutype == IMAGE_HDU)
+            {
+                /* Get the current dimensions */
+                long naxes[2];
+                fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
+                outfile.check();
+
+                int bitpix = 0;
+                fits_get_img_type(*outfile.fptr(), &bitpix, &outfile.status());
+                outfile.check();
+
+                long newnaxes[] = {naxes[0], naxes[1] + nextra};
+
+                fits_resize_img(*outfile.fptr(), bitpix, 2, newnaxes, &outfile.status());
+                outfile.check();
+            }
+            else
+            {
+                /* If the catalogue extension is found then add extra rows */
+                const string hduname = outfile.hduname();
+
+                if (hduname == "CATALOGUE")
+                {
+                    /* Append extra rows */
+                    long nrows = 0;
+                    fits_get_num_rows(*outfile.fptr(), &nrows, &outfile.status());
+                    outfile.check();
+
+                    fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
+                    outfile.check();
+
+
+                }
+            }
+
+
+
+
+            Fits::check(status);
+
+        }
+
+
+
+
+
         ts.stop("all");
         return 0;
     }
