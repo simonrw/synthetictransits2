@@ -268,12 +268,6 @@ int main(int argc, char *argv[])
         Model Current;
         const int NullSubIndex = -1;
 
-        /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
-        st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
-            " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
-            into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
-            into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
-            into(Current.c4), into(Current.teff);
 
         /* Get a list of the objects in the file */
         vector<string> ObjectNames;
@@ -302,6 +296,14 @@ int main(int argc, char *argv[])
             ObjectNames.push_back(CurrentName);
             delete[] cstrnames[i];
         }
+
+        /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
+        st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
+        " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
+        into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
+        into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
+        into(Current.c4), into(Current.teff);
+
 
         while (st.exec())
         {
