@@ -143,6 +143,12 @@ int main(int argc, char *argv[])
         Fits infile(infile_arg.getValue());
         NewFits outfile("!" + output_arg.getValue());
 
+        /* Add the transinj key */
+        outfile.moveHDU(1);
+        bool transinj_val = true;
+        fits_write_key(*outfile.fptr(), TLOGICAL, "TRANSINJ", &transinj_val, "Contains false transits", &outfile.status());
+        outfile.check();
+
         /* Start by getting file information from the input */
         int nhdus = 0;
         fits_get_num_hdus(*infile.fptr(), &nhdus, &infile.status());
