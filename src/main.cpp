@@ -22,7 +22,7 @@ struct Model
     double rs;
     double rp;
     double ms;
-    vector<double> coeffs;
+    double c1, c2, c3, c4;
     double teff;
 };
 
