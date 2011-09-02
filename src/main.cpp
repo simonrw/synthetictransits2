@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
             int status = 0;
             infile.moveHDU(hdu);
 
+            cout << "HDU: " << infile.hduname();
+
             /* Copy the data and header across */
             fits_copy_hdu(*infile.fptr(), *outfile.fptr(), 0, &status);
 
@@ -156,6 +158,8 @@ int main(int argc, char *argv[])
                 fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
                 outfile.check();
 
+                cout << " - " << naxes[0] << "x" << naxes[1] << " pix";
+
                 int bitpix = 0;
                 fits_get_img_type(*outfile.fptr(), &bitpix, &outfile.status());
                 outfile.check();
@@ -164,21 +168,27 @@ int main(int argc, char *argv[])
 
                 fits_resize_img(*outfile.fptr(), bitpix, 2, newnaxes, &outfile.status());
                 outfile.check();
+
+                cout << " -> " << newnaxes[0] << "x" << newnaxes[1] << " pix";
             }
             else
             {
                 /* If the catalogue extension is found then add extra rows */
                 const string hduname = outfile.hduname();
+                long nrows = 0;
+                fits_get_num_rows(*outfile.fptr(), &nrows, &outfile.status());
+                outfile.check();
+
+                cout << " - " << nrows << " rows";
 
                 if (hduname == "CATALOGUE")
                 {
                     /* Append extra rows */
-                    long nrows = 0;
-                    fits_get_num_rows(*outfile.fptr(), &nrows, &outfile.status());
-                    outfile.check();
 
                     fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
                     outfile.check();
+
+                    cout << " -> " << nrows + nextra << " rows";
 
 
                 }
@@ -188,6 +198,7 @@ int main(int argc, char *argv[])
 
 
             Fits::check(status);
+            cout << endl;
 
         }
 
