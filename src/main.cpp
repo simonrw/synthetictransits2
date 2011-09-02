@@ -114,7 +114,8 @@ int main(int argc, char *argv[])
     try
     {
         TCLAP::CmdLine cmd("");
-        TCLAP::UnlabeledValueArg<string> filename_arg("file", "File", true, "", "Fits file", cmd);
+        TCLAP::ValueArg<string> infile_arg("i", "infile", "Input fits file", true, "", "Fits file", cmd);
+        TCLAP::ValueArg<string> candidates_arg("c", "candidates", "Input candidates file", true, "", "SQLite3 database", cmd);
         TCLAP::ValueArg<string> output_arg("o", "output", "Output file", false, "output.fits", "Fits file", cmd);
         cmd.parse(argc, argv);
 
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
         ts.start("all");
         ts.start("copy");
 
-        Fits infile(filename_arg.getValue());
+        Fits infile(infile_arg.getValue());
         NewFits outfile("!" + output_arg.getValue());
 
         /* Start by getting file information from the input */
