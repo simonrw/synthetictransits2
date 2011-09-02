@@ -118,7 +118,6 @@ int main(int argc, char *argv[])
 
         Fits infile("../data.fits");
         NewFits outfile("!output.fits");
-        infile.moveHDU("FLUX");
         ts.stop("all");
         return 0;
     }
