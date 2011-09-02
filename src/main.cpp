@@ -3,6 +3,8 @@
 #include <sqlitepp/sqlitepp.hpp>
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
+#include "timer.h"
+
 
 
 using namespace std;
@@ -49,6 +51,8 @@ void CopyImageData(Fits &infile, Fits &outfile, float MemLimit)
 
 int main(int argc, char *argv[])
 {
-    cout << "Hello world!" << endl;
+    Timer ts;
+    ts.start("all");
+    ts.stop("all");
     return 0;
 }
