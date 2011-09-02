@@ -6,11 +6,8 @@ using namespace std;
 
 vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 {
-}
-
-//Lightcurve GenerateSyntheticFromParams(const vector<double> &Time, double period, double midpoint, const vector<double> &coeffs, 
-        //double semi, double rPlan, double rStar, double inclination, double dr, double noise)
-//{
+    /* All values are in normalised units so have to scale always */
+    
     //double normalisedDistance = semi / rStar;
     //cout << "Normalisation constant: " << normalisedDistance << endl;
     //double omega = calcOmega(coeffs);
@@ -109,8 +106,5 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 
     //lc.radius = rPlan / rJup;
     //return lc;
+}
 
-
-
-
-//}
