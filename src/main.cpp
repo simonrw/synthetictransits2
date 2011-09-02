@@ -63,6 +63,13 @@ class Fits
             }
         }
 
+        const string hduname()
+        {
+            char buf[FLEN_VALUE];
+            fits_read_key(this->m_fptr, TSTRING, "EXTNAME", buf, NULL, &this->m_status);
+            this->check();
+            return string(buf);
+        }
 
 
 
@@ -106,16 +113,107 @@ int main(int argc, char *argv[])
 {
     try
     {
+        TCLAP::CmdLine cmd("");
+        TCLAP::UnlabeledValueArg<string> filename_arg("file", "File", true, "", "Fits file", cmd);
+        TCLAP::ValueArg<string> output_arg("o", "output", "Output file", false, "output.fits", "Fits file", cmd);
+        cmd.parse(argc, argv);
+
         Timer ts;
         ts.start("all");
 
-        Fits infile("../data.fits");
-        NewFits outfile("!output.fits");
-        infile.moveHDU("FLUX");
+        Fits infile(filename_arg.getValue());
+        NewFits outfile("!" + output_arg.getValue());
+
+        /* Start by getting file information from the input */
+        int nhdus = 0;
+        fits_get_num_hdus(*infile.fptr(), &nhdus, &infile.status());
+        infile.check();
+
+        cout << nhdus << " hdus found" << endl;
+
+
+        const int nextra = 100;
+
+
+        for (int hdu=2; hdu<=nhdus; ++hdu)
+        {
+            int status = 0;
+            infile.moveHDU(hdu);
+
+            cout << "HDU: " << infile.hduname();
+
+            /* Copy the data and header across */
+            fits_copy_hdu(*infile.fptr(), *outfile.fptr(), 0, &status);
+
+            /* Get the hdu type */
+            int hdutype = 0;
+            fits_get_hdu_type(*outfile.fptr(), &hdutype, &outfile.status());
+            outfile.check();
+
+            /* If an image hdu is found then just resize it */
+            if (hdutype == IMAGE_HDU)
+            {
+                /* Get the current dimensions */
+                long naxes[2];
+                fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
+                outfile.check();
+
+                cout << " - " << naxes[0] << "x" << naxes[1] << " pix";
+
+                int bitpix = 0;
+                fits_get_img_type(*outfile.fptr(), &bitpix, &outfile.status());
+                outfile.check();
+
+                long newnaxes[] = {naxes[0], naxes[1] + nextra};
+
+                fits_resize_img(*outfile.fptr(), bitpix, 2, newnaxes, &outfile.status());
+                outfile.check();
+
+                cout << " -> " << newnaxes[0] << "x" << newnaxes[1] << " pix";
+            }
+            else
+            {
+                /* If the catalogue extension is found then add extra rows */
+                const string hduname = outfile.hduname();
+                long nrows = 0;
+                fits_get_num_rows(*outfile.fptr(), &nrows, &outfile.status());
+                outfile.check();
+
+                cout << " - " << nrows << " rows";
+
+                if (hduname == "CATALOGUE")
+                {
+                    /* Append extra rows */
+
+                    fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
+                    outfile.check();
+
+                    cout << " -> " << nrows + nextra << " rows";
+
+
+                }
+            }
+
+
+
+
+            Fits::check(status);
+            cout << endl;
+
+        }
+
+
+
+
+
         ts.stop("all");
         return 0;
     }
-    catch (runtime_error &e)
+    catch (TCLAP::ArgException &e)
+    {
+        cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
+    }
+    catch (std::exception &e)
     {
         cerr << e.what() << endl;
     }
