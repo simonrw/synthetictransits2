@@ -10,6 +10,22 @@
 
 using namespace std;
 
+struct Model
+{
+    int id;
+    string name;
+    int submodel_id;
+    double period;
+    double epoch;
+    double a;
+    double i;
+    double rs;
+    double rp;
+    double ms;
+    vector<double> coeffs;
+    double teff;
+};
+
 class Fits
 {
     public:
@@ -218,6 +234,10 @@ int main(int argc, char *argv[])
 
 
         ts.stop("copy");
+
+        /* File copy finished */
+
+        /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
 
 
 
