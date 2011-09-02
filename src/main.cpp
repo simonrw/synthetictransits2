@@ -15,11 +15,14 @@ struct Fits
         : status(0)
     {
         fits_open_file(&fptr, filename.c_str(), READWRITE, &status);
+        check();
     }
+
 
     virtual ~Fits()
     {
         fits_close_file(fptr, &status);
+        check();
     }
 
     void check()
