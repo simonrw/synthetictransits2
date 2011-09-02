@@ -32,6 +32,12 @@ struct Fits
             throw runtime_error("Error with fitsio");
         }
     }
+
+    void moveHDU(const string &hduname)
+    {
+        fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(hduname.c_str()), 0, &status);
+        check();
+    }
 };
 
 
