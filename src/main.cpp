@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         ts.stop("all");
         return 0;
     }
-    catch (runtime_error &e)
+    catch (std::exception &e)
     {
         cerr << e.what() << endl;
     }
