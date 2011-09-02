@@ -47,18 +47,6 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 
     const double p = (m.rp * rJup) / (m.rs * rSun);
 
-    //[> set up the random number generator <]
-    //Normaldev_BM randGenerator(0., 1., time(NULL));
-
-
-
-    //[> Output lightcurve <]
-    //Lightcurve lc(Time.size());
-    //lc.period = period;
-    //lc.epoch = midpoint;
-
-    //[> parallel process this part <]
-//#pragma omp parallel for
     //for (unsigned int i=0; i<Time.size(); ++i)
     //{
         //double t = Time.at(i);
