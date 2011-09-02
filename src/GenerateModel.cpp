@@ -25,6 +25,7 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 {
     /* All values are in normalised units so have to scale always */
     
+    vector<double> Flux;
     double normalisedDistance = m.a * AU / (m.rs * rSun);
     cout << "Normalisation constant: " << normalisedDistance << endl;
 
@@ -133,5 +134,6 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 
     //lc.radius = rPlan / rJup;
     //return lc;
+    return Flux;
 }
 
