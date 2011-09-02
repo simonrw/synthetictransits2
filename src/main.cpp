@@ -259,7 +259,6 @@ int main(int argc, char *argv[])
         }
 
 
-        cout << counter << " iterations" << endl;
 
         ts.stop("model.iterate");
 
