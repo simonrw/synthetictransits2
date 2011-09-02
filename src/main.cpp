@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 #include <stdexcept>
 #include <sqlitepp/sqlitepp.hpp>
 #include <fitsio.h>
@@ -9,6 +10,23 @@
 
 
 using namespace std;
+using namespace sqlitepp;
+
+struct Model
+{
+    int id;
+    string name;
+    int submodel_id;
+    double period;
+    double epoch;
+    double a;
+    double i;
+    double rs;
+    double rp;
+    double mstar;
+    double c1, c2, c3, c4;
+    double teff;
+};
 
 class Fits
 {
@@ -126,6 +144,12 @@ int main(int argc, char *argv[])
         Fits infile(infile_arg.getValue());
         NewFits outfile("!" + output_arg.getValue());
 
+        /* Add the transinj key */
+        outfile.moveHDU(1);
+        bool transinj_val = true;
+        fits_write_key(*outfile.fptr(), TLOGICAL, "TRANSINJ", &transinj_val, "Contains false transits", &outfile.status());
+        outfile.check();
+
         /* Start by getting file information from the input */
         int nhdus = 0;
         fits_get_num_hdus(*infile.fptr(), &nhdus, &infile.status());
@@ -134,7 +158,19 @@ int main(int argc, char *argv[])
         cout << nhdus << " hdus found" << endl;
 
 
-        const int nextra = 100;
+        /* Open the sqlite3 database here */
+        session conn(candidates_arg.getValue());
+        statement st(conn);
+
+        /* get the required number of new objects */
+        int nextra = 0;
+        st << "select count(*) from addmodels", into(nextra);
+        if (!st.exec())
+        {
+            throw runtime_error("No input models found");
+        }
+
+        cout << "Inserting " << nextra << " extra models" << endl;
 
 
         for (int hdu=2; hdu<=nhdus; ++hdu)
@@ -185,12 +221,35 @@ int main(int argc, char *argv[])
 
                 if (hduname == "CATALOGUE")
                 {
+                    /* Need to add extra columns */
+                    int ncols = 0;
+                    fits_get_num_cols(*outfile.fptr(), &ncols, &outfile.status());
+                    outfile.check();
+
+                    cout << ", " << ncols << " columms";
+
                     /* Append extra rows */
 
                     fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
                     outfile.check();
 
                     cout << " -> " << nrows + nextra << " rows";
+
+                    /* Need 9 extra columns */
+
+                    char *ColumnNames[] = {"SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
+                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1J", "1D", "1D", "1D", "1D"};
+
+                    size_t nNewCols = sizeof(ColumnNames) / sizeof(char*);
+                    assert((sizeof(ColumnFormats) / sizeof(char*)) == nNewCols);
+
+                    fits_insert_cols(*outfile.fptr(), ncols + 1, nNewCols, ColumnNames, ColumnFormats, &outfile.status());
+                    outfile.check();
+
+                    fits_get_num_cols(*outfile.fptr(), &ncols, &outfile.status());
+                    outfile.check();
+
+                    cout << ", " << ncols << " columms";
 
 
                 }
@@ -207,7 +266,34 @@ int main(int argc, char *argv[])
 
         ts.stop("copy");
 
+        /* File copy finished */
 
+        ts.start("model.iterate");
+        Model Current;
+        const int NullSubIndex = -1;
+
+        /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
+        st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
+            " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
+            into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
+            into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
+            into(Current.c4), into(Current.teff);
+
+        while (st.exec())
+        {
+            if (Current.submodel_id != NullSubIndex)
+            {
+                //cout << "No submodel needed" << endl;
+            }
+            else
+            {
+                //cout << "Submodel required" << endl;
+            }
+        }
+
+
+
+        ts.stop("model.iterate");
 
         ts.stop("all");
         return 0;
