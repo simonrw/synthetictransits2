@@ -386,15 +386,30 @@ int main(int argc, char *argv[])
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
 
-            vector<double> OriginalFlux(naxes[0]);
-            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &OriginalFlux[0], 0, &outfile.status());
-
-
-            
-            /* Try writing the model to the flux hdu */
             outfile.moveHDU("FLUX");
+            vector<double> OriginalFlux(naxes[0]);
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &OriginalFlux[0], 0, &outfile.status());
+
+            /* Normalise to the weighted median flux level */
+            double WeightedMed = WeightedMedian(OriginalFlux, 2.5);
             
-            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &ModelFlux[0], &outfile.status());
+            vector<double> TransitAdded(naxes[0]);
+            for (int i=0; i<naxes[0]; ++i)
+            {
+                double fluxval = OriginalFlux.at(i);
+                fluxval /= WeightedMed;
+                
+                double modelval = ModelFlux.at(i);
+                
+                /* Add the flux */
+                double result = WeightedMed * (fluxval + modelval - 1.0);
+                TransitAdded[i] = result;
+            }
+
+
+            
+            
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &TransitAdded[0], &outfile.status());
             outfile.check();
             
             /* And update the catalogue false transits information */
