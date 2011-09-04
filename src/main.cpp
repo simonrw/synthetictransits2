@@ -48,7 +48,16 @@ double WidthFromParams(const Model &m)
         return 0.0;
     }
     
-    return Norm * asin(sqrt(InsideSqrt));
+    const double SqrtInsideSqrt = sqrt(InsideSqrt);
+    
+    if ((SqrtInsideSqrt < -1.0) || (SqrtInsideSqrt > 1.0))
+    {
+        return 0;
+    }
+    
+    
+    
+    return Norm * asin(SqrtInsideSqrt);
     
 }
 
