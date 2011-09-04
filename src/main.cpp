@@ -6,6 +6,8 @@
 #include <tclap/CmdLine.h>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
+#include <cstdlib>
 #include <fstream>
 
 /* Local includes */
@@ -20,6 +22,28 @@
 using namespace std;
 using namespace sqlitepp;
 
+double WidthFromParams(const Model &m)
+{
+    /* Returns the width of the full transit based on some lc parameters
+     *
+     * \frac{P}{\pi} \asin{\sqrt{(\frac{R_P + R_S}{a})^2 - \cos^2 i}}
+     */
+    const double Norm = (m.period * secondsInDay) / M_PI;
+    if (m.a == 0)
+    {
+        /* Something hasn't updated the separation */
+        return 0;
+    }
+    
+    double FirstTerm = ((m.rp * rJup) + (m.rs * rSun)) / (m.a * AU);
+    
+    /* Square it */
+    FirstTerm *= FirstTerm;
+    
+    const double InsideSqrt = FirstTerm - cos(m.i * radiansInDegree);
+    return Norm * asin(sqrt(InsideSqrt));
+    
+}
 
 
 struct FalseColumnNumbers
@@ -287,9 +311,10 @@ int main(int argc, char *argv[])
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, OutputIndex, 1, 1, &Current.i, &outfile.status());
             
             double TransitDepth = (Current.rp * rJup) / (Current.rs * rSun);
+            double TransitWidth = WidthFromParams(Current);
             
             /* These next two require calculation */
-//            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, OutputIndex, 1, 1, &Current.period, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, OutputIndex, 1, 1, &TransitWidth, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, OutputIndex, 1, 1, &TransitDepth, &outfile.status());
 
 
