@@ -274,7 +274,8 @@ int main(int argc, char *argv[])
             /* Location to write the data to */
             const long OutputIndex = nrows + counter;
             
-            /* Need to append 1 for the catalogue information */
+            /* Need to append 1 for the catalogue information as the catalogue
+             is 1 indexed */
             const long CatalogueIndex = OutputIndex + 1;
             
             if (Current.submodel_id != NullSubIndex)
@@ -308,19 +309,19 @@ int main(int argc, char *argv[])
             
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, OutputIndex, 1, 1, &Current.period, &outfile.status());
-            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, OutputIndex, 1, 1, (int*)&Current.epoch, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, OutputIndex, 1, 1, &Current.rp, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, OutputIndex, 1, 1, &Current.rs, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, OutputIndex, 1, 1, &Current.a, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, OutputIndex, 1, 1, &Current.i, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &Current.period, &outfile.status());
+            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, (int*)&Current.epoch, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &Current.rp, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, CatalogueIndex, 1, 1, &Current.rs, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, CatalogueIndex, 1, 1, &Current.a, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, CatalogueIndex, 1, 1, &Current.i, &outfile.status());
             
             double TransitDepth = square((Current.rp * rJup) / (Current.rs * rSun));
             double TransitWidth = WidthFromParams(Current);
             
             /* These next two require calculation */
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, OutputIndex, 1, 1, &TransitWidth, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, OutputIndex, 1, 1, &TransitDepth, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, CatalogueIndex, 1, 1, &TransitWidth, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, CatalogueIndex, 1, 1, &TransitDepth, &outfile.status());
 
 
 
