@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
                     /* Need 9 extra columns */
 
                     char *ColumnNames[] = {"SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
-                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1J", "1D", "1D", "1D", "1D"};
+                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1D", "1D", "1D", "1D", "1D"};
 
                     size_t nNewCols = sizeof(ColumnNames) / sizeof(char*);
                     assert((sizeof(ColumnFormats) / sizeof(char*)) == nNewCols);
@@ -419,8 +419,8 @@ int main(int argc, char *argv[])
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
-            tmp = Current.epoch * secondsInDay;
-            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            tmp = Current.epoch;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
             tmp = Current.rp * rJup;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &tmp, &outfile.status());
