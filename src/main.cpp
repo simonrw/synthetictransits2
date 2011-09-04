@@ -364,6 +364,24 @@ int main(int argc, char *argv[])
             /* Write it to the new location */
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &jd[0], &outfile.status());
 
+            /* And copy the other data parts two */
+            vector<double> buffer(naxes[0]);
+            outfile.moveHDU("FLUXERR");
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("CCDX");
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("CCDY");
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("SKYBKG");
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("QUALITY");
+            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
             
