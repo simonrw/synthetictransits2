@@ -315,6 +315,9 @@ int main(int argc, char *argv[])
             vector<double> jd(naxes[0]);
             fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &jd[0], 0, &outfile.status());
 
+            /* Write it to the new location */
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &jd[0], &outfile.status());
+
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
             
