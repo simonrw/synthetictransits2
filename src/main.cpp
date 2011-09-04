@@ -73,7 +73,7 @@ struct FalseColumnNumbers
 
 long indexOf(const vector<string> &stringlist, const string &comp)
 {
-    for (int i=0; i<stringlist.size(); ++i)
+    for (size_t i=0; i<stringlist.size(); ++i)
     {
         if (stringlist.at(i) == comp)
         {
