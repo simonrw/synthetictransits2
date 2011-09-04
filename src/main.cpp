@@ -272,7 +272,10 @@ int main(int argc, char *argv[])
         while (st.exec())
         {
             /* Location to write the data to */
-            const long OutputIndex = nrows + counter + 1;
+            const long OutputIndex = nrows + counter;
+            
+            /* Need to append 1 for the catalogue information */
+            const long CatalogueIndex = OutputIndex + 1;
             
             if (Current.submodel_id != NullSubIndex)
             {
