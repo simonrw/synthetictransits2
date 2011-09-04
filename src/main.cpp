@@ -313,11 +313,21 @@ int main(int argc, char *argv[])
             /* Need to do some conversion but have to create a temp variable for this */
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, &Current.epoch, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &Current.rp, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, CatalogueIndex, 1, 1, &Current.rs, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, CatalogueIndex, 1, 1, &Current.a, &outfile.status());
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, CatalogueIndex, 1, 1, &Current.i, &outfile.status());
+            
+            tmp = Current.epoch * secondsInDay;
+            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.rp * rJup;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.rs * rSun;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.a * AU;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.i * radiansInDegree;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
             double TransitDepth = square((Current.rp * rJup) / (Current.rs * rSun));
             double TransitWidth = WidthFromParams(Current);
