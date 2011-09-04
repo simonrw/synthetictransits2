@@ -108,6 +108,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
 }
 
 
+template <typename T>
 T square(T val) { return val * val; }
 
 struct FalseColumnNumbers
