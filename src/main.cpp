@@ -6,6 +6,8 @@
 #include <tclap/CmdLine.h>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
+#include <cstdlib>
 #include <fstream>
 
 /* Local includes */
@@ -13,18 +15,66 @@
 #include "GenerateModel.h"
 #include "Model.h"
 #include "FitsObject.h"
+#include "constants.h"
+#include "ObjectSkipDefs.h"
 
 
 
 using namespace std;
 using namespace sqlitepp;
 
+double WidthFromParams(const Model &m)
+{
+    /* Returns the width of the full transit based on some lc parameters
+     *
+     * \frac{P}{\pi} \asin{\sqrt{(\frac{R_P + R_S}{a})^2 - \cos^2 i}}
+     */
+    const double Norm = (m.period * secondsInDay) / M_PI;
+    if (m.a == 0)
+    {
+        /* Something hasn't updated the separation */
+        return 0;
+    }
+    
+    double FirstTerm = ((m.rp * rJup) + (m.rs * rSun)) / (m.a * AU);
+    
+    /* Square it */
+    FirstTerm *= FirstTerm;
+    
+    const double InsideSqrt = FirstTerm - cos(m.i * radiansInDegree);
+    
+    /* Check that InsideSqrt is not <= 0 */
+    if (InsideSqrt <= 0.0)
+    {
+        return 0.0;
+    }
+    
+    const double SqrtInsideSqrt = sqrt(InsideSqrt);
+    
+    if ((SqrtInsideSqrt < -1.0) || (SqrtInsideSqrt > 1.0))
+    {
+        return 0;
+    }
+    
+    
+    
+    return Norm * asin(SqrtInsideSqrt);
+    
+}
 
+template <typename T>
+T square(T val) { return val * val; }
+
+struct FalseColumnNumbers
+{
+    int skipdet, period, width, depth, epoch,
+    rp, rs, a, i;
+};
 
 
 long indexOf(const vector<string> &stringlist, const string &comp)
 {
-    for (int i=0; i<stringlist.size(); ++i)
+    for (size_t i=0; i<stringlist.size(); ++i)
     {
         if (stringlist.at(i) == comp)
         {
@@ -176,6 +226,23 @@ int main(int argc, char *argv[])
         ts.stop("copy");
 
         /* File copy finished */
+        
+        /* Prefetch the column numbers for later use */
+        outfile.moveHDU("CATALOGUE");
+        FalseColumnNumbers fcn;
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "SKIPDET", &fcn.skipdet, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_PERIOD", &fcn.period, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_WIDTH", &fcn.width, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_DEPTH", &fcn.depth, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_EPOCH", &fcn.epoch, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RP", &fcn.rp, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RS", &fcn.rs, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_A", &fcn.a, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_I", &fcn.i, &outfile.status());
+        outfile.check();
+
+
+
 
         ts.start("model.iterate");
         Model Current;
@@ -219,11 +286,14 @@ int main(int argc, char *argv[])
 
 
         int counter = 0;
-        ofstream debugfile("debug.txt");
         while (st.exec())
         {
             /* Location to write the data to */
             const long OutputIndex = nrows + counter;
+            
+            /* Need to append 1 for the catalogue information as the catalogue
+             is 1 indexed */
+            const long CatalogueIndex = OutputIndex + 1;
             
             if (Current.submodel_id != NullSubIndex)
             {
@@ -254,10 +324,45 @@ int main(int argc, char *argv[])
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &ModelFlux[0], &outfile.status());
             outfile.check();
             
-            for (int i=0; i<ModelFlux.size(); ++i)
-            {
-                debugfile << counter << " " << Current.period << " " << setprecision(15) << Current.epoch << " " << Current.rp << " " << Current.rs << " " << setprecision(15) << jd[i] << " " << ModelFlux[i] << endl;
-            }
+            /* And update the catalogue false transits information */
+            outfile.moveHDU("CATALOGUE");
+
+            /* Need to do some conversion but have to create a temp variable for this */
+            double tmp = Current.period * secondsInDay;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.epoch * secondsInDay;
+            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.rp * rJup;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.rs * rSun;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.a * AU;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            tmp = Current.i * radiansInDegree;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            
+            double TransitDepth = square((Current.rp * rJup) / (Current.rs * rSun));
+            double TransitWidth = WidthFromParams(Current);
+            
+            /* These next two require calculation */
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, CatalogueIndex, 1, 1, &TransitWidth, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, CatalogueIndex, 1, 1, &TransitDepth, &outfile.status());
+            
+            /* Now the skipdet flag */
+            int SkipdetFlag = AlterDetrending::skipboth;
+            fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, CatalogueIndex, 1, 1, &SkipdetFlag, &outfile.status());
+            
+            /* Now validate */
+            outfile.check();
+
+
+
+            
             
             ++counter;
         }
