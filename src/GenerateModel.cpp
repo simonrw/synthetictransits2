@@ -82,7 +82,7 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
     
     vector<double> Flux;
     double normalisedDistance = m.a * AU / (m.rs * rSun);
-    cout << "Normalisation constant: " << normalisedDistance << endl;
+//    cout << "Normalisation constant: " << normalisedDistance << endl;
 
     const double dr = 0.001;
     const double dt = 60.;
@@ -98,7 +98,7 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 
     double omega = calcOmega(coeffs);
     double angFreq = 2. * M_PI / (m.period * secondsInDay);
-    cout << "Angular frequency: " << angFreq << " rad per sec" << endl;
+//    cout << "Angular frequency: " << angFreq << " rad per sec" << endl;
 
     ///* get the cosine of the inclination */
     double cosi = cos(m.i * radiansInDegree);
