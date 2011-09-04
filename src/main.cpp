@@ -13,6 +13,7 @@
 #include "GenerateModel.h"
 #include "Model.h"
 #include "FitsObject.h"
+#include "constants.h"
 
 
 
@@ -285,9 +286,11 @@ int main(int argc, char *argv[])
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, OutputIndex, 1, 1, &Current.a, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, OutputIndex, 1, 1, &Current.i, &outfile.status());
             
+            double TransitDepth = (Current.rp * rJup) / (Current.rs * rSun);
+            
             /* These next two require calculation */
 //            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, OutputIndex, 1, 1, &Current.period, &outfile.status());
-//            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, OutputIndex, 1, 1, &Current.period, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, OutputIndex, 1, 1, &TransitDepth, &outfile.status());
 
 
 
