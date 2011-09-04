@@ -31,6 +31,7 @@ set(HDRS
     ${${TARGET}_SOURCE_DIR}/include/Model.h
     ${${TARGET}_SOURCE_DIR}/include/GenerateModel.h
     ${${TARGET}_SOURCE_DIR}/include/FitsObject.h
+    ${${TARGET}_SOURCE_DIR}/include/ObjectSkipDefs.h
     )
 
 add_executable(${TARGET} ${SRCS} ${HDRS})
