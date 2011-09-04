@@ -45,6 +45,8 @@ double WidthFromParams(const Model &m)
     
 }
 
+template <typename T>
+T square(T val) { return val * val; }
 
 struct FalseColumnNumbers
 {
@@ -310,7 +312,7 @@ int main(int argc, char *argv[])
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, OutputIndex, 1, 1, &Current.a, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, OutputIndex, 1, 1, &Current.i, &outfile.status());
             
-            double TransitDepth = (Current.rp * rJup) / (Current.rs * rSun);
+            double TransitDepth = square((Current.rp * rJup) / (Current.rs * rSun));
             double TransitWidth = WidthFromParams(Current);
             
             /* These next two require calculation */
