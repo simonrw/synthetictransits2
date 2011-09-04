@@ -4,6 +4,8 @@
 import pyfits
 from pylab import *
 import argparse
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 def main(args):
     f  = pyfits.open(args.file)
@@ -14,19 +16,35 @@ def main(args):
 
     # get the objects where the width is not 0
     Widths = Catalogue.field("FAKE_WIDTH")
+    Epochs = Catalogue.field("FAKE_EPOCH")
     Periods = Catalogue.field("FAKE_PERIOD")
+    Depths = Catalogue.field("FAKE_DEPTH")
+    Widths = Catalogue.field("FAKE_WIDTH")
     Index, = where(Widths!=0)
 
-    ion()
-    for i in Index[::-1]:
+    pp = PdfPages("output.pdf")
+
+    #ion()
+    Reversed = Index[::-1]
+    for i in Reversed[:20]:
+        print i
         cla()
         Time = HJD[i]
-        Lightcurve = Flux[i]
-        Period = (Periods[i] / 86400.)
-        plot((Time/Period) % 1.0, Lightcurve, 'r,')
-        draw()
+        Epoch = Epochs[i]
+        Period = Periods[i]
 
-        raw_input("Press enter to continue")
+        Phase = ((Time - Epoch) / (Period / 86400.)) % 1.0
+        Phase[Phase>0.5] -= 1.0
+        Lightcurve = Flux[i]
+
+        plot(Phase, Lightcurve, 'r,')
+        title("Depth: %f, width: %f" % (Depths[i], Widths[i] / Period))
+
+        xlim(-0.3, 0.3)
+
+        pp.savefig()
+
+    pp.close()
 
 
 
