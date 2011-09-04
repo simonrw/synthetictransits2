@@ -63,6 +63,52 @@ double WidthFromParams(const Model &m)
 }
 
 template <typename T>
+T WeightedMedian(const vector<T> &data, const double siglevel)
+{
+    vector<T> buffer;
+    const size_t N = data.size();
+    
+    /* First calculate the mean */
+    double av = 0;
+    for (size_t i=0; i<N; ++i)
+    {
+        av += data.at(i);
+    }
+    av /= (double)N;
+
+    /* now the sigma */
+    double sd = 0;
+    for (size_t i=0; i<N; ++i)
+    {
+        sd += (data.at(i) - av)*(data.at(i) - av);
+    }
+    sd /= (double)N;
+    sd = sqrt(sd);
+
+    const double upperlim = av + siglevel * sd;
+    const double lowerlim = av - siglevel * sd;
+
+    for (int i=0; i<N; ++i)
+    {
+        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim))
+        {
+            buffer.push_back(data.at(i));
+        }
+    }
+
+    cout << N - buffer.size() << " elements rejected" << endl;
+
+    /* Sort the array */
+    sort(buffer.begin(), buffer.end());
+
+    /* Return the middle one */
+    return buffer.at(buffer.size() / 2);
+
+
+}
+
+
+template <typename T>
 T square(T val) { return val * val; }
 
 struct FalseColumnNumbers
@@ -197,7 +243,7 @@ int main(int argc, char *argv[])
                     /* Need 9 extra columns */
 
                     char *ColumnNames[] = {"SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
-                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1J", "1D", "1D", "1D", "1D"};
+                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1D", "1D", "1D", "1D", "1D"};
 
                     size_t nNewCols = sizeof(ColumnNames) / sizeof(char*);
                     assert((sizeof(ColumnFormats) / sizeof(char*)) == nNewCols);
@@ -313,15 +359,57 @@ int main(int argc, char *argv[])
 
 
             vector<double> jd(naxes[0]);
-            fits_read_img(*outfile.fptr(), TDOUBLE, SourceIndex+1, naxes[0], 0, &jd[0], 0, &outfile.status());
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &jd[0], 0, &outfile.status());
+
+            /* Write it to the new location */
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &jd[0], &outfile.status());
+
+            /* And copy the other data parts two */
+            vector<double> buffer(naxes[0]);
+            outfile.moveHDU("FLUXERR");
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("CCDX");
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("CCDY");
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("SKYBKG");
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.moveHDU("QUALITY");
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.check();
 
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
-            
-            /* Try writing the model to the flux hdu */
+
             outfile.moveHDU("FLUX");
+            vector<double> OriginalFlux(naxes[0]);
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &OriginalFlux[0], 0, &outfile.status());
+
+            /* Normalise to the weighted median flux level */
+            double WeightedMed = WeightedMedian(OriginalFlux, 2.5);
             
-            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &ModelFlux[0], &outfile.status());
+            vector<double> TransitAdded(naxes[0]);
+            for (int i=0; i<naxes[0]; ++i)
+            {
+                double fluxval = OriginalFlux.at(i);
+                fluxval /= WeightedMed;
+                
+                double modelval = ModelFlux.at(i);
+                
+                /* Add the flux */
+                double result = WeightedMed * (fluxval + modelval - 1.0);
+                TransitAdded[i] = result;
+            }
+
+
+            
+            
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &TransitAdded[0], &outfile.status());
             outfile.check();
             
             /* And update the catalogue false transits information */
@@ -331,8 +419,8 @@ int main(int argc, char *argv[])
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
-            tmp = Current.epoch * secondsInDay;
-            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
+            tmp = Current.epoch;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
             tmp = Current.rp * rJup;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &tmp, &outfile.status());
