@@ -63,6 +63,51 @@ double WidthFromParams(const Model &m)
 }
 
 template <typename T>
+T WeightedMedian(const vector<T> &data, const double siglevel)
+{
+    vector<T> buffer;
+    const size_t N = data.size();
+    
+    /* First calculate the mean */
+    double av = 0;
+    for (size_t i=0; i<N; ++i)
+    {
+        av += data.at(i);
+    }
+    av /= (double)N;
+
+    /* now the sigma */
+    double sd = 0;
+    for (size_t i=0; i<N; ++i)
+    {
+        sd += (data.at(i) - av)*(data.at(i) - av);
+    }
+    sd /= (double)N;
+    sd = sqrt(sd);
+
+    const double upperlim = av + siglevel * sd;
+    const double lowerlim = av - siglevel * sd;
+
+    for (int i=0; i<N; ++i)
+    {
+        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim))
+        {
+            buffer.push_back(data.at(i));
+        }
+    }
+
+    cout << N - buffer.size() << " elements rejected" << endl;
+
+    /* Sort the array */
+    sort(buffer.begin(), buffer.end());
+
+    /* Return the middle one */
+    return buffer.at(buffer.size() / 2);
+
+
+}
+
+
 T square(T val) { return val * val; }
 
 struct FalseColumnNumbers
