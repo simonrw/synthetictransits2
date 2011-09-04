@@ -309,7 +309,11 @@ int main(int argc, char *argv[])
             
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
-            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &Current.period, &outfile.status());
+
+            /* Need to do some conversion but have to create a temp variable for this */
+            double tmp = Current.period;
+            tmp *= secondsInDay;
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             fits_write_col(*outfile.fptr(), TINT, fcn.epoch, CatalogueIndex, 1, 1, (int*)&Current.epoch, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &Current.rp, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, CatalogueIndex, 1, 1, &Current.rs, &outfile.status());
