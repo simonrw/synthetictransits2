@@ -21,6 +21,12 @@ using namespace sqlitepp;
 
 
 
+struct FalseColumnNumbers
+{
+    int skipdet, period, width, depth, epoch,
+    rp, rs, a, i;
+};
+
 
 long indexOf(const vector<string> &stringlist, const string &comp)
 {
@@ -176,6 +182,23 @@ int main(int argc, char *argv[])
         ts.stop("copy");
 
         /* File copy finished */
+        
+        /* Prefetch the column numbers for later use */
+        outfile.moveHDU("CATALOGUE");
+        FalseColumnNumbers fcn;
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "SKIPDET", &fcn.skipdet, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_PERIOD", &fcn.period, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_WIDTH", &fcn.width, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_DEPTH", &fcn.depth, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_EPOCH", &fcn.epoch, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RP", &fcn.rp, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RS", &fcn.rs, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_A", &fcn.a, &outfile.status());
+        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_I", &fcn.i, &outfile.status());
+        outfile.check();
+
+
+
 
         ts.start("model.iterate");
         Model Current;
