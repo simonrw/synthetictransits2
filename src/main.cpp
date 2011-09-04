@@ -254,6 +254,8 @@ int main(int argc, char *argv[])
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &ModelFlux[0], &outfile.status());
             outfile.check();
             
+            /* And update the catalogue false transits information */
+            
             for (int i=0; i<ModelFlux.size(); ++i)
             {
                 debugfile << counter << " " << Current.period << " " << setprecision(15) << Current.epoch << " " << Current.rp << " " << Current.rs << " " << setprecision(15) << jd[i] << " " << ModelFlux[i] << endl;
