@@ -16,6 +16,7 @@
 #include "Model.h"
 #include "FitsObject.h"
 #include "constants.h"
+#include "ObjectSkipDefs.h"
 
 
 
@@ -351,6 +352,13 @@ int main(int argc, char *argv[])
             /* These next two require calculation */
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, CatalogueIndex, 1, 1, &TransitWidth, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, CatalogueIndex, 1, 1, &TransitDepth, &outfile.status());
+            
+            /* Now the skipdet flag */
+            int SkipdetFlag = AlterDetrending::skipboth;
+            fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, CatalogueIndex, 1, 1, &SkipdetFlag, &outfile.status());
+            
+            /* Now validate */
+            outfile.check();
 
 
 
