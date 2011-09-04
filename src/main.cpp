@@ -277,6 +277,20 @@ int main(int argc, char *argv[])
             outfile.check();
             
             /* And update the catalogue false transits information */
+            outfile.moveHDU("CATALOGUE");
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, OutputIndex, 1, 1, &Current.period, &outfile.status());
+            fits_write_col(*outfile.fptr(), TINT, fcn.epoch, OutputIndex, 1, 1, (int*)&Current.epoch, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, OutputIndex, 1, 1, &Current.rp, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, OutputIndex, 1, 1, &Current.rs, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, OutputIndex, 1, 1, &Current.a, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, OutputIndex, 1, 1, &Current.i, &outfile.status());
+            
+            /* These next two require calculation */
+//            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, OutputIndex, 1, 1, &Current.period, &outfile.status());
+//            fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, OutputIndex, 1, 1, &Current.period, &outfile.status());
+
+
+
             
             
             ++counter;
