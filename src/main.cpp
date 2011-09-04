@@ -381,6 +381,7 @@ int main(int argc, char *argv[])
             outfile.moveHDU("QUALITY");
             fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
+            outfile.check();
 
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
