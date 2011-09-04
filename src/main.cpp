@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
         while (st.exec())
         {
             /* Location to write the data to */
-            const long OutputIndex = nrows + counter;
+            const long OutputIndex = nrows + counter + 1;
             
             if (Current.submodel_id != NullSubIndex)
             {
