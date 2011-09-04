@@ -242,7 +242,6 @@ int main(int argc, char *argv[])
 
 
         int counter = 0;
-        ofstream debugfile("debug.txt");
         while (st.exec())
         {
             /* Location to write the data to */
@@ -279,10 +278,6 @@ int main(int argc, char *argv[])
             
             /* And update the catalogue false transits information */
             
-            for (int i=0; i<ModelFlux.size(); ++i)
-            {
-                debugfile << counter << " " << Current.period << " " << setprecision(15) << Current.epoch << " " << Current.rp << " " << Current.rs << " " << setprecision(15) << jd[i] << " " << ModelFlux[i] << endl;
-            }
             
             ++counter;
         }
