@@ -41,6 +41,13 @@ double WidthFromParams(const Model &m)
     FirstTerm *= FirstTerm;
     
     const double InsideSqrt = FirstTerm - cos(m.i * radiansInDegree);
+    
+    /* Check that InsideSqrt is not <= 0 */
+    if (InsideSqrt <= 0.0)
+    {
+        return 0.0;
+    }
+    
     return Norm * asin(sqrt(InsideSqrt));
     
 }
