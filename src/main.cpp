@@ -175,6 +175,9 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
     f.moveHDU("HJD");
     vector<double> jd(length);
     
+    /* Fetch the jd data */
+    fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
+    
     /* Now get the addition model */
     vector<double> ModelFlux = GenerateSynthetic(jd, m);
     
