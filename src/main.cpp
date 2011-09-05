@@ -414,7 +414,6 @@ int main(int argc, char *argv[])
         into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
         into(Current.c4), into(Current.teff);
 
-
         int counter = 0;
         while (st.exec())
         {
@@ -468,35 +467,10 @@ int main(int argc, char *argv[])
             if (Current.submodel_id != NullSubIndex)
             {
             }
-
-            /* Now get the addition model */
-            vector<double> ModelFlux = GenerateSynthetic(jd, Current);
-
-            outfile.moveHDU("FLUX");
-            vector<double> OriginalFlux(naxes[0]);
-            fits_read_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], 0, &OriginalFlux[0], 0, &outfile.status());
-
-            /* Normalise to the weighted median flux level */
-            double WeightedMed = WeightedMedian(OriginalFlux, 2.5);
             
-            vector<double> TransitAdded(naxes[0]);
-            for (int i=0; i<naxes[0]; ++i)
-            {
-                double fluxval = OriginalFlux.at(i);
-                fluxval /= WeightedMed;
-                
-                double modelval = ModelFlux.at(i);
-                
-                /* Add the flux */
-                double result = WeightedMed * (fluxval + modelval - 1.0);
-                TransitAdded[i] = result;
-            }
+            /* Add a transit model to the data */
+            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"));
 
-
-            
-            
-            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &TransitAdded[0], &outfile.status());
-            outfile.check();
             
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
