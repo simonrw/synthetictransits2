@@ -353,11 +353,6 @@ int main(int argc, char *argv[])
 
 
             
-            if (Current.submodel_id != NullSubIndex)
-            {
-            }
-
-
 
             /* And copy the other data parts two */
             vector<double> buffer(naxes[0]);
@@ -381,6 +376,9 @@ int main(int argc, char *argv[])
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
             outfile.check();
 
+            if (Current.submodel_id != NullSubIndex)
+            {
+            }
             /* Now get the addition model */
             vector<double> ModelFlux = GenerateSynthetic(jd, Current);
 
