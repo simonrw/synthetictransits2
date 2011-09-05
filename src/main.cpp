@@ -485,6 +485,9 @@ int main(int argc, char *argv[])
                 {
                     throw runtime_error("Cannot find subtraction object");
                 }
+                
+                /* SubModel now contains the subtraction model */
+                AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], SubModel, ArithMeth("-"));
             }
             
             /* Add a transit model to the data */
