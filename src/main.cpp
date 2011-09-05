@@ -170,6 +170,52 @@ long indexOf(const vector<string> &stringlist, const string &comp)
     throw runtime_error("Cannot find object");
 }
 
+void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype)
+{
+    f.moveHDU("HJD");
+    vector<double> jd(length);
+    
+    /* Now get the addition model */
+    vector<double> ModelFlux = GenerateSynthetic(jd, m);
+    
+    f.moveHDU("FLUX");
+    vector<double> OriginalFlux(length);
+    fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &OriginalFlux[0], 0, &f.status());
+    
+    /* Normalise to the weighted median flux level */
+    double WeightedMed = WeightedMedian(OriginalFlux, 2.5);
+    
+    vector<double> TransitAdded(length);
+    double result = 0;
+    for (int i=0; i<length; ++i)
+    {
+        double fluxval = OriginalFlux.at(i);
+        fluxval /= WeightedMed;
+        
+        double modelval = ModelFlux.at(i);
+
+        /* Perform the arithmetic */
+        
+        if (arithtype.type() == add)
+        {
+            result = WeightedMed * (fluxval + modelval - 1.0);
+        }
+        else if (arithtype.type() == sub)
+        {
+            result = WeightedMed * (fluxval - modelval - 1.0);
+        }
+        TransitAdded[i] = result;
+    }
+    
+    
+    
+    
+    fits_write_img(*f.fptr(), TDOUBLE, startindex, length, &TransitAdded[0], &f.status());
+    f.check();
+
+
+}
+
 int main(int argc, char *argv[])
 {
     try
