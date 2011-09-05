@@ -341,31 +341,29 @@ int main(int argc, char *argv[])
              is 1 indexed */
             const long CatalogueIndex = OutputIndex + 1;
             
-            if (Current.submodel_id != NullSubIndex)
-            {
-            }
+            /* Get the index of the original lightcurve */
+            long SourceIndex = indexOf(ObjectNames, Current.name);
 
-            /* Generate the add model */
-            /* Need to get the time array */
+            
+            /* Copy the original data to the new location */
             outfile.moveHDU("HJD");
-
-            /* Need to get the image dimensions */
             long naxes[2];
             fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
             outfile.check();
 
-            /* Get the index of the original lightcurve */
-            long SourceIndex = indexOf(ObjectNames, Current.name);
+
+            
+            if (Current.submodel_id != NullSubIndex)
+            {
+            }
 
 
-            vector<double> jd(naxes[0]);
-            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &jd[0], 0, &outfile.status());
-
-            /* Write it to the new location */
-            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &jd[0], &outfile.status());
 
             /* And copy the other data parts two */
             vector<double> buffer(naxes[0]);
+            outfile.moveHDU("HJD");
+            fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
+            fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
             outfile.moveHDU("FLUXERR");
             fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
