@@ -107,6 +107,12 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
         av += data.at(i);
     }
     av /= (double)N;
+    
+    /* Put in a check for if the av is 0 */
+    if (av == 0)
+    {
+        throw runtime_error("Cannot calculate average - all points are 0");
+    }
 
     /* now the sigma */
     double sd = 0;
