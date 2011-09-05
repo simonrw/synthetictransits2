@@ -23,6 +23,38 @@
 using namespace std;
 using namespace sqlitepp;
 
+enum
+{
+    add=101,
+    sub
+};
+
+
+
+class ArithMeth
+{
+    
+    int type;
+    
+public:
+    ArithMeth(const string &type)
+    {
+        if (type == "+")
+        {
+            this->type = add;
+        }
+        else if (type == "-")
+        {
+            this->type = sub;
+        }
+        else
+        {
+            throw runtime_error("Unknown method specified (must be + or -)");
+        }
+    }
+    
+};
+
 double WidthFromParams(const Model &m)
 {
     /* Returns the width of the full transit based on some lc parameters
