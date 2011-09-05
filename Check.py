@@ -37,8 +37,14 @@ def main(args):
         Phase[Phase>0.5] -= 1.0
         Lightcurve = Flux[i]
 
+        Lightcurve /= median(Lightcurve)
+
         plot(Phase, Lightcurve, 'r,')
         title("Depth: %f, width: %f" % (Depths[i], Widths[i] / Period))
+
+        axhline(1. - Depths[i])
+        axvline(-Widths[i] / Period)
+        axvline(Widths[i] / Period)
 
         xlim(-0.3, 0.3)
 
