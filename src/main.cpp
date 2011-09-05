@@ -472,6 +472,19 @@ int main(int argc, char *argv[])
 
             if (Current.submodel_id != NullSubIndex)
             {
+                statement subst(conn);
+                Model SubModel;
+                
+                subst << "select id, name, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
+                " from submodels where id = " << Current.submodel_id, into(SubModel.id), into(SubModel.name),  
+                into(SubModel.period), into(SubModel.epoch), into(SubModel.a), into(SubModel.i), into(SubModel.rs),
+                into(SubModel.rp), into(SubModel.mstar), into(SubModel.c1), into(SubModel.c2), into(SubModel.c3), 
+                into(SubModel.c4), into(SubModel.teff);
+                
+                if (!subst.exec())
+                {
+                    throw runtime_error("Cannot find subtraction object");
+                }
             }
             
             /* Add a transit model to the data */
