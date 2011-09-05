@@ -134,7 +134,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
         }
     }
 
-    cout << N - buffer.size() << " elements rejected" << endl;
+//    cout << N - buffer.size() << " elements rejected" << endl;
 
     /* Sort the array */
     sort(buffer.begin(), buffer.end());
