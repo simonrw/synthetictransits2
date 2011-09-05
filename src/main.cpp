@@ -30,22 +30,21 @@ enum
 };
 
 
-
 class ArithMeth
 {
     
-    int type;
+    int m_type;
     
 public:
     ArithMeth(const string &type)
     {
         if (type == "+")
         {
-            this->type = add;
+            this->m_type = add;
         }
         else if (type == "-")
         {
-            this->type = sub;
+            this->m_type = sub;
         }
         else
         {
@@ -53,6 +52,7 @@ public:
         }
     }
     
+    const int type() const { return this->m_type; }
 };
 
 double WidthFromParams(const Model &m)
