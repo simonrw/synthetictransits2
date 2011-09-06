@@ -234,6 +234,26 @@ int main(int argc, char *argv[])
         ts.start("copy");
 
         Fits infile(infile_arg.getValue());
+
+        /* Make sure the project has the 'project' header key,
+         * and if it's wasp make sure all jds are converted 
+         * to wasp dates 
+         */
+        infile.moveHDU(1);
+
+        char Project_cstr[FLEN_VALUE];
+        fits_read_key(*infile.fptr(), TSTRING, "PROJECT", &Project_cstr, 0, &infile.status());
+
+        /* check the key exists */
+        if (infile.status() == KEY_NO_EXIST)
+        {
+            throw runtime_error("Project key not found, please set this");
+        }
+        
+        /* Create string object for easy comparisons */
+        string Project(Project_cstr);
+
+
         NewFits outfile("!" + output_arg.getValue());
 
         /* Add the transinj key */
