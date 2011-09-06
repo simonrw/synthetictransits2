@@ -29,9 +29,12 @@ enum
     sub
 };
 
-struct Config
+struct ConfigContainer
 {
     bool isWASP;
+    string DatabaseFilename;
+    string SourceFilename;
+    string OutputFilename;
 };
 
 
@@ -238,6 +241,9 @@ int main(int argc, char *argv[])
         ts.start("all");
         ts.start("copy");
 
+        /* Set up the config variable */
+        ConfigContainer Config;
+
         Fits infile(infile_arg.getValue());
 
         /* Make sure the project has the 'project' header key,
@@ -257,6 +263,11 @@ int main(int argc, char *argv[])
         
         /* Create string object for easy comparisons */
         string Project(Project_cstr);
+
+        Config.isWASP = (Project == "WASP") ? true : false;
+        Config.DatabaseFilename = candidates_arg.getValue();
+        Config.SourceFilename = infile_arg.getValue();
+        Config.OutputFilename = output_arg.getValue();
 
 
         NewFits outfile("!" + output_arg.getValue());
