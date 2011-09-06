@@ -234,6 +234,12 @@ int main(int argc, char *argv[])
         ts.start("copy");
 
         Fits infile(infile_arg.getValue());
+
+        /* Make sure the project has the 'project' header key,
+         * and if it's wasp make sure all jds are converted 
+         * to wasp dates 
+         */
+        infile.moveHDU(1);
         NewFits outfile("!" + output_arg.getValue());
 
         /* Add the transinj key */
