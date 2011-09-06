@@ -29,6 +29,11 @@ enum
     sub
 };
 
+struct Config
+{
+    bool isWASP;
+};
+
 
 class ArithMeth
 {
