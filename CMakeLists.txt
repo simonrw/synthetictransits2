@@ -21,10 +21,17 @@ include_directories(
 set(SRCS 
     ${${TARGET}_SOURCE_DIR}/src/main.cpp
     ${${TARGET}_SOURCE_DIR}/src/timer.C
+    ${${TARGET}_SOURCE_DIR}/src/GenerateModel.cpp
+    ${${TARGET}_SOURCE_DIR}/src/FitsObject.cpp
     )
 
 set(HDRS
     ${${TARGET}_SOURCE_DIR}/include/timer.h
+    ${${TARGET}_SOURCE_DIR}/include/constants.h
+    ${${TARGET}_SOURCE_DIR}/include/Model.h
+    ${${TARGET}_SOURCE_DIR}/include/GenerateModel.h
+    ${${TARGET}_SOURCE_DIR}/include/FitsObject.h
+    ${${TARGET}_SOURCE_DIR}/include/ObjectSkipDefs.h
     )
 
 add_executable(${TARGET} ${SRCS} ${HDRS})
