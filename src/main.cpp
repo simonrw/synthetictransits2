@@ -37,6 +37,18 @@ struct ConfigContainer
     string OutputFilename;
 };
 
+const double jd_ref = 2453005.5;
+
+double wd2jd(double wd)
+{
+    return (wd / secondsInDay) + jd_ref;
+}
+
+double jd2wd(double jd)
+{
+    return (jd - jd_ref) * secondsInDay;
+}
+
 
 class ArithMeth
 {
@@ -110,11 +122,16 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
     
     /* First calculate the mean */
     double av = 0;
+    int ValidPoints = 0;
     for (size_t i=0; i<N; ++i)
     {
-        av += data.at(i);
+        if (!isnan(data.at(i)))
+        {
+            av += data.at(i);
+            ValidPoints++;
+        }
     }
-    av /= (double)N;
+    av /= (double)ValidPoints;
     
     /* Put in a check for if the av is 0 */
     if (av == 0)
@@ -122,13 +139,21 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
         throw runtime_error("Cannot calculate average - all points are 0");
     }
 
+    if (isnan(av))
+    {
+        throw runtime_error("Cannot calculate average - average is NaN");
+    }
+
     /* now the sigma */
     double sd = 0;
     for (size_t i=0; i<N; ++i)
     {
-        sd += (data.at(i) - av)*(data.at(i) - av);
+        if (!isnan(data.at(i)))
+        {
+            sd += (data.at(i) - av)*(data.at(i) - av);
+        }
     }
-    sd /= (double)N;
+    sd /= (double)ValidPoints;
     sd = sqrt(sd);
 
     const double upperlim = av + siglevel * sd;
@@ -136,7 +161,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
 
     for (int i=0; i<N; ++i)
     {
-        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim))
+        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim) && !isnan(data.at(i)))
         {
             buffer.push_back(data.at(i));
         }
@@ -189,13 +214,23 @@ long indexOf(const vector<string> &stringlist, const string &comp)
     throw runtime_error("Cannot find object");
 }
 
-void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype)
+void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
 {
     f.moveHDU("HJD");
+
     vector<double> jd(length);
     
     /* Fetch the jd data */
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
+
+    /* if the Config.isWASP parameter is set then convert the array to jd */
+    if (Config.isWASP)
+    {
+        for (int i=0; i<length; ++i)
+        {
+            jd[i] = wd2jd(jd[i]);
+        }
+    }
     
     /* Now get the addition model */
     vector<double> ModelFlux = GenerateSynthetic(jd, m);
@@ -224,7 +259,7 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
         }
         else if (arithtype.type() == sub)
         {
-            result = WeightedMed * (fluxval - modelval - 1.0);
+            result = WeightedMed * (fluxval - modelval + 1.0);
         }
         TransitAdded[i] = result;
     }
@@ -541,11 +576,11 @@ int main(int argc, char *argv[])
                 }
                 
                 /* SubModel now contains the subtraction model */
-                AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], SubModel, ArithMeth("-"));
+                AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], SubModel, ArithMeth("-"), Config);
             }
             
             /* Add a transit model to the data */
-            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"));
+            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
 
             
             /* And update the catalogue false transits information */
@@ -608,7 +643,7 @@ int main(int argc, char *argv[])
     }
     catch (std::exception &e)
     {
-        cerr << e.what() << endl;
+        cerr << "std::exception: " << e.what() << endl;
     }
 
     return EXIT_FAILURE;
