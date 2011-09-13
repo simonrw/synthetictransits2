@@ -553,11 +553,11 @@ int main(int argc, char *argv[])
                 }
                 
                 /* SubModel now contains the subtraction model */
-                AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], SubModel, ArithMeth("-"));
+                AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], SubModel, ArithMeth("-"), Config);
             }
             
             /* Add a transit model to the data */
-            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"));
+            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
 
             
             /* And update the catalogue false transits information */
