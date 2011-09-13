@@ -172,7 +172,18 @@ long indexOf(const vector<string> &stringlist, const string &comp)
         {
             return i;
         }
+        else
+        {
+            string nameWithoutWhitespace(stringlist.at(i));
+            nameWithoutWhitespace.erase(remove_if(nameWithoutWhitespace.begin(), nameWithoutWhitespace.end(), ::isspace), nameWithoutWhitespace.end());
+
+            if (nameWithoutWhitespace == comp)
+            {
+                return i;
+            }
+        }
     }
+
 
     /* If the loop gets here the object is not found */
     throw runtime_error("Cannot find object");
