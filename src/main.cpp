@@ -259,7 +259,7 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
         }
         else if (arithtype.type() == sub)
         {
-            result = WeightedMed * (fluxval - modelval - 1.0);
+            result = WeightedMed * (fluxval - modelval + 1.0);
         }
         TransitAdded[i] = result;
     }
