@@ -174,7 +174,7 @@ long indexOf(const vector<string> &stringlist, const string &comp)
         }
         else
         {
-            string nameWithoutWhitespace(stringlist.at(i));
+            string nameWithoutWhitespace(comp);
             nameWithoutWhitespace.erase(remove_if(nameWithoutWhitespace.begin(), nameWithoutWhitespace.end(), ::isspace), nameWithoutWhitespace.end());
 
             if (nameWithoutWhitespace == comp)
