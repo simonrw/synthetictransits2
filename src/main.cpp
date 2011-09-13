@@ -139,6 +139,11 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
         throw runtime_error("Cannot calculate average - all points are 0");
     }
 
+    if (isnan(av))
+    {
+        throw runtime_error("Cannot calculate average - average is NaN");
+    }
+
     /* now the sigma */
     double sd = 0;
     for (size_t i=0; i<N; ++i)
