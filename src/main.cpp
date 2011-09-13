@@ -122,11 +122,16 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
     
     /* First calculate the mean */
     double av = 0;
+    int ValidPoints = 0;
     for (size_t i=0; i<N; ++i)
     {
-        av += data.at(i);
+        if (!isnan(data.at(i)))
+        {
+            av += data.at(i);
+            ValidPoints++;
+        }
     }
-    av /= (double)N;
+    av /= (double)ValidPoints;
     
     /* Put in a check for if the av is 0 */
     if (av == 0)
