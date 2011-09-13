@@ -591,6 +591,10 @@ int main(int argc, char *argv[])
     {
         cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
     }
+    catch (std::runtime_error &e)
+    {
+        cerr << "Runtime error: " << e.what() << endl;
+    }
     catch (std::exception &e)
     {
         cerr << e.what() << endl;
