@@ -148,9 +148,12 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
     double sd = 0;
     for (size_t i=0; i<N; ++i)
     {
-        sd += (data.at(i) - av)*(data.at(i) - av);
+        if (!isnan(data.at(i)))
+        {
+            sd += (data.at(i) - av)*(data.at(i) - av);
+        }
     }
-    sd /= (double)N;
+    sd /= (double)ValidPoints;
     sd = sqrt(sd);
 
     const double upperlim = av + siglevel * sd;
