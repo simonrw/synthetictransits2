@@ -204,6 +204,7 @@ long indexOf(const vector<string> &stringlist, const string &comp)
 void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
 {
     f.moveHDU("HJD");
+
     vector<double> jd(length);
     
     /* Fetch the jd data */
@@ -629,7 +630,7 @@ int main(int argc, char *argv[])
     }
     catch (std::exception &e)
     {
-        cerr << e.what() << endl;
+        cerr << "std::exception: " << e.what() << endl;
     }
 
     return EXIT_FAILURE;
