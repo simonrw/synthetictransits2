@@ -1,20 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+sys.path.insert(0, '/home/astro/phrfbf/build/lib/python2.6/site-packages')
+sys.path.insert(0, '/home/astro/phrebf/Python/JG')
 import pyfits
 from pylab import *
 import argparse
 from matplotlib.backends.backend_pdf import PdfPages
+from jg.ctx import wd2jd
 
 
 def main(args):
     f  = pyfits.open(args.file)
 
     Catalogue = f['catalogue'].data
-    Flux = f['flux'].data
-    HJD = f['hjd'].data
+    #Flux = f['flux'].data
+    #HJD = f['hjd'].data
 
-    # get the objects where the width is not 0
+    ## get the objects where the width is not 0
     Widths = Catalogue.field("FAKE_WIDTH")
     Epochs = Catalogue.field("FAKE_EPOCH")
     Periods = Catalogue.field("FAKE_PERIOD")
@@ -24,18 +28,18 @@ def main(args):
 
     pp = PdfPages("output.pdf")
 
-    #ion()
+    ##ion()
     Reversed = Index[::-1]
     for i in Reversed[:20]:
         print i
         cla()
-        Time = HJD[i]
+        Time = wd2jd(f['hjd'].section[i])
         Epoch = Epochs[i]
         Period = Periods[i]
 
         Phase = ((Time - Epoch) / (Period / 86400.)) % 1.0
         Phase[Phase>0.5] -= 1.0
-        Lightcurve = Flux[i]
+        Lightcurve = f['flux'].section[i]
 
         Lightcurve /= median(Lightcurve)
 
@@ -52,6 +56,7 @@ def main(args):
 
     pp.close()
 
+    print Epochs[Index]
 
 
 if __name__ == '__main__':
