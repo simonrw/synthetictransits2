@@ -60,7 +60,7 @@ public:
         }
     }
     
-    const int type() const { return this->m_type; }
+    int type() const { return this->m_type; }
 };
 
 double WidthFromParams(const Model &m)
