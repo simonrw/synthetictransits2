@@ -161,7 +161,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
 
     for (int i=0; i<N; ++i)
     {
-        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim))
+        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim) && !isnan(data.at(i)))
         {
             buffer.push_back(data.at(i));
         }
