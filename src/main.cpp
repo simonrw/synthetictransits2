@@ -37,6 +37,14 @@ struct ConfigContainer
     string OutputFilename;
 };
 
+double wd2jd(double wd)
+{
+}
+
+double jd2wd(double jd)
+{
+}
+
 
 class ArithMeth
 {
