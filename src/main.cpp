@@ -37,12 +37,16 @@ struct ConfigContainer
     string OutputFilename;
 };
 
+const double jd_ref = 2453005.5;
+
 double wd2jd(double wd)
 {
+    return (wd / secondsInDay) + jd_ref;
 }
 
 double jd2wd(double jd)
 {
+    return (jd - jd_ref) * secondsInDay;
 }
 
 
