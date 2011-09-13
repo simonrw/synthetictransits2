@@ -201,7 +201,7 @@ long indexOf(const vector<string> &stringlist, const string &comp)
     throw runtime_error("Cannot find object");
 }
 
-void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype)
+void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
 {
     f.moveHDU("HJD");
     vector<double> jd(length);
