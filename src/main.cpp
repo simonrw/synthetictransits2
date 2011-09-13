@@ -60,7 +60,7 @@ public:
         }
     }
     
-    const int type() const { return this->m_type; }
+    int type() const { return this->m_type; }
 };
 
 double WidthFromParams(const Model &m)
@@ -172,7 +172,18 @@ long indexOf(const vector<string> &stringlist, const string &comp)
         {
             return i;
         }
+        else
+        {
+            string nameWithoutWhitespace(comp);
+            nameWithoutWhitespace.erase(remove_if(nameWithoutWhitespace.begin(), nameWithoutWhitespace.end(), ::isspace), nameWithoutWhitespace.end());
+
+            if (stringlist.at(i) == nameWithoutWhitespace)
+            {
+                return i;
+            }
+        }
     }
+
 
     /* If the loop gets here the object is not found */
     throw runtime_error("Cannot find object");
@@ -590,6 +601,10 @@ int main(int argc, char *argv[])
     catch (TCLAP::ArgException &e)
     {
         cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
+    }
+    catch (std::runtime_error &e)
+    {
+        cerr << "Runtime error: " << e.what() << endl;
     }
     catch (std::exception &e)
     {
