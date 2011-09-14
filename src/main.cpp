@@ -37,6 +37,44 @@ struct ConfigContainer
     string OutputFilename;
 };
 
+/** Progress class for nice formatting of a counter */
+class Progress
+{
+    public:
+    int counter;
+
+    Progress()
+        : counter(0)
+    {
+    }
+
+    virtual ~Progress()
+    {
+    }
+
+    string operator() ()
+    {
+        stringstream ss;
+
+        if (counter < 10)
+        {
+            ss << "\b";
+        }
+        else if (counter < 100)
+        {
+            ss << "\b\b";
+        }
+        else if (counter < 1000)
+        {
+            ss << "\b\b\b"; 
+        }
+        ss << counter;
+    
+        ++counter;
+        return ss.str();
+    }
+};
+
 const double jd_ref = 2453005.5;
 
 double wd2jd(double wd)
@@ -507,6 +545,7 @@ int main(int argc, char *argv[])
         into(Current.c4), into(Current.teff);
 
         int counter = 0;
+        Progress p;
         while (st.exec())
         {
             /* Location to write the data to */
@@ -624,7 +663,11 @@ int main(int argc, char *argv[])
             
             
             ++counter;
+
+            cout << p();
         }
+
+        cout << endl;
 
 
 
