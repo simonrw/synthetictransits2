@@ -516,6 +516,7 @@ int main(int argc, char *argv[])
         into(Current.c4), into(Current.teff);
 
         int counter = 0;
+        cout << "Generating models" << endl;
         while (st.exec())
         {
             /* Location to write the data to */
@@ -635,6 +636,8 @@ int main(int argc, char *argv[])
             
             ++counter;
         }
+
+        cout << endl;
 
 
 
