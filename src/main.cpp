@@ -23,6 +23,8 @@
 using namespace std;
 using namespace sqlitepp;
 
+typedef vector<string> stringlist;
+
 enum
 {
     add=101,
@@ -294,6 +296,7 @@ string AlterObjectName(const string &OriginalName)
 {
 
     /* Split the string at the J character */
+
 
 
     return OriginalName;
