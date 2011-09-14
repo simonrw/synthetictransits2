@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include <cassert>
 #include <stdexcept>
 #include <sqlitepp/sqlitepp.hpp>
@@ -22,6 +23,8 @@
 
 using namespace std;
 using namespace sqlitepp;
+
+typedef vector<string> stringlist;
 
 enum
 {
@@ -189,7 +192,7 @@ struct FalseColumnNumbers
 };
 
 
-long indexOf(const vector<string> &stringlist, const string &comp)
+long indexOf(const stringlist &stringlist, const string &comp)
 {
     for (size_t i=0; i<stringlist.size(); ++i)
     {
@@ -273,14 +276,42 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
 
 }
 
-template <typename T>
-void OverPrint(const T &val)
+stringlist &split(const string &s, char delim, stringlist &elems)
 {
-    cout << "\r" << val;
-    cout.flush();
-
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
 }
 
+
+stringlist split(const string &s, char delim)
+{
+    stringlist elems;
+    return split(s, delim, elems);
+}
+
+string AlterObjectName(const string &OriginalName)
+{
+
+    /* Split the string at the J character */
+    stringlist parts = split(OriginalName, 'J');
+
+    /* check the length for validity */
+    if (parts.size() != 2)
+    {
+        throw runtime_error("Unknown object name encountered");
+    }
+
+    stringstream NewName;
+    NewName << "1SYNTH J" << parts[1];
+
+
+
+    return NewName.str();
+}
 
 int main(int argc, char *argv[])
 {
@@ -481,7 +512,7 @@ int main(int argc, char *argv[])
 
 
         /* Get a list of the objects in the file */
-        vector<string> ObjectNames;
+        stringlist ObjectNames;
         infile.moveHDU("CATALOGUE");
 
         int obj_id_colno = -1;
@@ -625,6 +656,16 @@ int main(int argc, char *argv[])
             /* Now the skipdet flag */
             int SkipdetFlag = AlterDetrending::skipboth;
             fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, CatalogueIndex, 1, 1, &SkipdetFlag, &outfile.status());
+
+            /* Write the new name to the obj_id column */
+            int obj_id_colnum;
+            fits_get_colnum(*outfile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colnum, &outfile.status());
+
+            string NewName = AlterObjectName(Current.name);
+            char *cstr = new char[26];
+            strcpy(cstr, NewName.c_str());
+            fits_write_col_str(*outfile.fptr(), obj_id_colnum, CatalogueIndex, 1, 1, &cstr, &outfile.status());
+            delete[] cstr;
             
             /* Now validate */
             outfile.check();
