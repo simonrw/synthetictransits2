@@ -665,6 +665,20 @@ int main(int argc, char *argv[])
             int SkipdetFlag = AlterDetrending::skipboth;
             fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, CatalogueIndex, 1, 1, &SkipdetFlag, &outfile.status());
 
+            /* Also write the original lightcurve's skipdet flag, but check what it is first*/
+            int OldSkipdetFlag;
+            fits_read_col(*outfile.fptr(), TINT, fcn.skipdet, SourceIndex+1, 1, 1, NULL, &OldSkipdetFlag, NULL, &outfile.status());
+
+            /* Only update if it's set to AlterDetrending::include */
+            if (OldSkipdetFlag == AlterDetrending::include)
+            {
+                /* New value of the flag */
+                SkipdetFlag = AlterDetrending::skiptfa;
+                fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, SourceIndex + 1, 1, 1, &SkipdetFlag, &outfile.status());
+            }
+
+
+
             /* Write the new name to the obj_id column */
             int obj_id_colnum;
             fits_get_colnum(*outfile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colnum, &outfile.status());
