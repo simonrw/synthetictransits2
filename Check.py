@@ -30,6 +30,7 @@ def main(args):
     Index, = where(Widths!=0)
 
     pp = PdfPages("output.pdf")
+    pp2 = PdfPages('wasp12phase.pdf')
 
     ##ion()
     Reversed = Index[::-1]
@@ -58,6 +59,7 @@ def main(args):
         pp.savefig()
 
     pp.close()
+    pp2.close()
 
     #print Epochs[Index]
 
