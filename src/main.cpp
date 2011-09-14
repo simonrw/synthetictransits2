@@ -313,6 +313,14 @@ string AlterObjectName(const string &OriginalName)
     return NewName.str();
 }
 
+template <typename T>
+void OverPrint(const T &val)
+{
+    cout << "\r" << val;
+    cout.flush();
+
+}
+
 int main(int argc, char *argv[])
 {
     try
