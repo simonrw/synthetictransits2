@@ -296,10 +296,20 @@ string AlterObjectName(const string &OriginalName)
 {
 
     /* Split the string at the J character */
+    stringlist parts = split(OriginalName, 'J');
+
+    /* check the length for validity */
+    if (parts.size() != 2)
+    {
+        throw runtime_error("Unknown object name encountered");
+    }
+
+    stringstream NewName;
+    NewName << "1SYNTH J" << parts[1];
 
 
 
-    return OriginalName;
+    return NewName.str();
 }
 
 int main(int argc, char *argv[])
