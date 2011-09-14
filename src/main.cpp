@@ -273,8 +273,27 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
 
 }
 
+vector<string> &split(const string &s, char delim, vector<string> &elems)
+{
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+vector<string> split(const string &s, char delim)
+{
+    vector<string> elems;
+    return split(s, delim, elems);
+}
+
 string AlterObjectName(const string &OriginalName)
 {
+
+    /* Split the string at the J character */
 
 
     return OriginalName;
