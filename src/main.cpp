@@ -40,32 +40,6 @@ struct ConfigContainer
     string OutputFilename;
 };
 
-/** Progress class for nice formatting of a counter */
-class Progress
-{
-    public:
-    int counter;
-
-    Progress()
-        : counter(0)
-    {
-    }
-
-    virtual ~Progress()
-    {
-    }
-
-    string operator() ()
-    {
-        stringstream ss;
-
-        ss << "\r" << counter;
-    
-        ++counter;
-        return ss.str();
-    }
-};
-
 const double jd_ref = 2453005.5;
 
 double wd2jd(double wd)
@@ -573,7 +547,7 @@ int main(int argc, char *argv[])
         into(Current.c4), into(Current.teff);
 
         int counter = 0;
-        Progress p;
+        cout << "Generating models" << endl;
         while (st.exec())
         {
             /* Location to write the data to */
@@ -699,10 +673,9 @@ int main(int argc, char *argv[])
 
 
             
+            OverPrint(counter);
             
             ++counter;
-
-            cout << p();
         }
 
         cout << endl;
