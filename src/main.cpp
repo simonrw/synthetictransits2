@@ -59,19 +59,7 @@ class Progress
     {
         stringstream ss;
 
-        if (counter < 10)
-        {
-            ss << "\b";
-        }
-        else if (counter < 100)
-        {
-            ss << "\b\b";
-        }
-        else if (counter < 1000)
-        {
-            ss << "\b\b\b"; 
-        }
-        ss << counter;
+        ss << "\r" << counter;
     
         ++counter;
         return ss.str();
