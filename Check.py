@@ -10,6 +10,9 @@ import argparse
 from matplotlib.backends.backend_pdf import PdfPages
 from jg.ctx import wd2jd
 
+wasp12 = {'p': 1.0914222,
+        'e': 2454508.97605
+        }
 
 def main(args):
     f  = pyfits.open(args.file)
