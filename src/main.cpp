@@ -275,6 +275,10 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
 
 int main(int argc, char *argv[])
 {
+
+
+
+    return 0;
     try
     {
         TCLAP::CmdLine cmd("");
