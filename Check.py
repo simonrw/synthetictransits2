@@ -56,7 +56,7 @@ def main(args):
 
     pp.close()
 
-    print Epochs[Index]
+    #print Epochs[Index]
 
 
 if __name__ == '__main__':
