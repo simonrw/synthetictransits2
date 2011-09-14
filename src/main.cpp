@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include <cassert>
 #include <stdexcept>
 #include <sqlitepp/sqlitepp.hpp>
@@ -654,6 +655,16 @@ int main(int argc, char *argv[])
             /* Now the skipdet flag */
             int SkipdetFlag = AlterDetrending::skipboth;
             fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, CatalogueIndex, 1, 1, &SkipdetFlag, &outfile.status());
+
+            /* Write the new name to the obj_id column */
+            int obj_id_colnum;
+            fits_get_colnum(*outfile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colnum, &outfile.status());
+
+            string NewName = AlterObjectName(Current.name);
+            char *cstr = new char[26];
+            strcpy(cstr, NewName.c_str());
+            fits_write_col_str(*outfile.fptr(), obj_id_colnum, CatalogueIndex, 1, 1, &cstr, &outfile.status());
+            delete[] cstr;
             
             /* Now validate */
             outfile.check();
