@@ -681,7 +681,9 @@ int main(int argc, char *argv[])
 
 
             
-            OverPrint(counter);
+            stringstream ss;
+            ss << counter + 1 << "/" << nextra;
+            OverPrint(ss.str());
             
             ++counter;
         }
