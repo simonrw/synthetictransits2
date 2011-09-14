@@ -273,8 +273,18 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
 
 }
 
+string AlterObjectName(const string &OriginalName)
+{
+
+
+    return OriginalName;
+}
+
 int main(int argc, char *argv[])
 {
+    const string WASP12Name = "1SWASP J063032.79+294020.4";
+
+    cout << AlterObjectName(WASP12Name) << endl;;
 
 
 
