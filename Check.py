@@ -10,6 +10,9 @@ import argparse
 from matplotlib.backends.backend_pdf import PdfPages
 from jg.ctx import wd2jd
 
+wasp12 = {'p': 1.0914222,
+        'e': 2454508.97605
+        }
 
 def main(args):
     f  = pyfits.open(args.file)
@@ -27,6 +30,7 @@ def main(args):
     Index, = where(Widths!=0)
 
     pp = PdfPages("output.pdf")
+    pp2 = PdfPages('wasp12phase.pdf')
 
     ##ion()
     Reversed = Index[::-1]
@@ -54,9 +58,19 @@ def main(args):
 
         pp.savefig()
 
-    pp.close()
+        cla()
+        Phase = ((Time - wasp12['e']) / wasp12['p']) % 1.0
+        Phase[Phase>0.5] -= 1.0
 
-    print Epochs[Index]
+        plot(Phase, Lightcurve, 'r,')
+        title("WASP-12b phase")
+        xlim(-0.3, 0.3)
+        pp2.savefig()
+
+    pp.close()
+    pp2.close()
+
+    #print Epochs[Index]
 
 
 if __name__ == '__main__':
