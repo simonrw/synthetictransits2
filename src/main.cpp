@@ -191,7 +191,7 @@ struct FalseColumnNumbers
 };
 
 
-long indexOf(const vector<string> &stringlist, const string &comp)
+long indexOf(const stringlist &stringlist, const string &comp)
 {
     for (size_t i=0; i<stringlist.size(); ++i)
     {
@@ -275,7 +275,7 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
 
 }
 
-vector<string> &split(const string &s, char delim, vector<string> &elems)
+stringlist &split(const string &s, char delim, stringlist &elems)
 {
     stringstream ss(s);
     string item;
@@ -286,9 +286,9 @@ vector<string> &split(const string &s, char delim, vector<string> &elems)
 }
 
 
-vector<string> split(const string &s, char delim)
+stringlist split(const string &s, char delim)
 {
-    vector<string> elems;
+    stringlist elems;
     return split(s, delim, elems);
 }
 
@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 
 
         /* Get a list of the objects in the file */
-        vector<string> ObjectNames;
+        stringlist ObjectNames;
         infile.moveHDU("CATALOGUE");
 
         int obj_id_colno = -1;
