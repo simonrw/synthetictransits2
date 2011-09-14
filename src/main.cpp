@@ -631,6 +631,7 @@ int main(int argc, char *argv[])
 
 
             
+            OverPrint(counter);
             
             ++counter;
         }
