@@ -442,9 +442,7 @@ int main(int argc, char *argv[])
             {
                 /* If the catalogue extension is found then add extra rows */
                 const string hduname = outfile.hduname();
-                long nrows = 0;
-                fits_get_num_rows(*outfile.fptr(), &nrows, &outfile.status());
-                outfile.check();
+                long nrows = outfile.nrows();
 
                 cout << " - " << nrows << " rows";
 
