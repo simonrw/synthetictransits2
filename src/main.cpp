@@ -498,15 +498,15 @@ int main(int argc, char *argv[])
         /* Prefetch the column numbers for later use */
         outfile.moveHDU("CATALOGUE");
         FalseColumnNumbers fcn;
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "SKIPDET", &fcn.skipdet, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_PERIOD", &fcn.period, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_WIDTH", &fcn.width, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_DEPTH", &fcn.depth, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_EPOCH", &fcn.epoch, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RP", &fcn.rp, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RS", &fcn.rs, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_A", &fcn.a, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_I", &fcn.i, &outfile.status());
+        fcn.skipdet = outfile.columnNumber("SKIPDET");
+        fcn.period = outfile.columnNumber("FAKE_PERIOD");
+        fcn.width = outfile.columnNumber("FAKE_WIDTH");
+        fcn.depth = outfile.columnNumber("FAKE_DEPTH");
+        fcn.epoch = outfile.columnNumber("FAKE_EPOCH");
+        fcn.rp = outfile.columnNumber("FAKE_RP");
+        fcn.rs = outfile.columnNumber("FAKE_RS");
+        fcn.a = outfile.columnNumber("FAKE_A");
+        fcn.i = outfile.columnNumber("FAKE_I");
         outfile.check();
 
 
@@ -519,11 +519,7 @@ int main(int argc, char *argv[])
 
         /* Get a list of the objects in the file */
         stringlist ObjectNames;
-        infile.moveHDU("CATALOGUE");
-
-        int obj_id_colno = -1;
-        fits_get_colnum(*infile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colno, &infile.status());
-        infile.check();
+        int obj_id_colno = outfile.columnNumber("OBJ_ID");
 
         /* Read the data in as strings */
         int dispwidth;
