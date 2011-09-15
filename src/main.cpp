@@ -525,8 +525,7 @@ int main(int argc, char *argv[])
         int dispwidth;
         fits_get_col_display_width(*infile.fptr(), obj_id_colno, &dispwidth, &infile.status());
 
-        long nrows;
-        fits_get_num_rows(*infile.fptr(), &nrows, &infile.status());
+        long nrows = outfile.nrows();
 
         vector<char*> cstrnames(nrows);
         for (int i=0; i<nrows; ++i) cstrnames[i] = new char[dispwidth+1];
