@@ -554,7 +554,7 @@ int main(int argc, char *argv[])
         into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
         into(Current.c4), into(Current.teff);
 
-        int counter = 0;
+        long counter = 0;
         cout << "Generating models" << endl;
         while (st.exec())
         {
