@@ -519,7 +519,8 @@ int main(int argc, char *argv[])
 
         /* Get a list of the objects in the file */
         stringlist ObjectNames;
-        int obj_id_colno = outfile.columnNumber("OBJ_ID");
+        infile.moveHDU("CATALOGUE");
+        int obj_id_colno = infile.columnNumber("OBJ_ID");
 
         /* Read the data in as strings */
         int dispwidth;
