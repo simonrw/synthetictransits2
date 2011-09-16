@@ -519,8 +519,6 @@ int main(int argc, char *argv[])
 
         /* Get a list of the objects in the file */
         stringlist ObjectNames;
-        infile.moveHDU("CATALOGUE");
-
         int obj_id_colno = -1;
         fits_get_colnum(*infile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colno, &infile.status());
         infile.check();
