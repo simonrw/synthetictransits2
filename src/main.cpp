@@ -523,13 +523,14 @@ int main(int argc, char *argv[])
 
         /* Read the data in as strings */
         int dispwidth;
-        fits_get_col_display_width(*infile.fptr(), obj_id_colno, &dispwidth, &infile.status());
+        //infile.moveHDU("CATALOGUE");
+        fits_get_col_display_width(*outfile.fptr(), obj_id_colno, &dispwidth, &outfile.status());
 
         long nrows = outfile.nrows();
 
         vector<char*> cstrnames(nrows);
         for (int i=0; i<nrows; ++i) cstrnames[i] = new char[dispwidth+1];
-        fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
+        fits_read_col_str(*outfile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &outfile.status());
 
         for (int i=0; i<nrows; ++i)
         {
@@ -539,6 +540,8 @@ int main(int argc, char *argv[])
             ObjectNames.push_back(CurrentName);
             delete[] cstrnames[i];
         }
+
+        outfile.check();
 
         /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
         st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
