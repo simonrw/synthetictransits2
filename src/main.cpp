@@ -442,9 +442,7 @@ int main(int argc, char *argv[])
             {
                 /* If the catalogue extension is found then add extra rows */
                 const string hduname = outfile.hduname();
-                long nrows = 0;
-                fits_get_num_rows(*outfile.fptr(), &nrows, &outfile.status());
-                outfile.check();
+                long nrows = outfile.nrows();
 
                 cout << " - " << nrows << " rows";
 
@@ -500,15 +498,15 @@ int main(int argc, char *argv[])
         /* Prefetch the column numbers for later use */
         outfile.moveHDU("CATALOGUE");
         FalseColumnNumbers fcn;
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "SKIPDET", &fcn.skipdet, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_PERIOD", &fcn.period, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_WIDTH", &fcn.width, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_DEPTH", &fcn.depth, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_EPOCH", &fcn.epoch, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RP", &fcn.rp, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_RS", &fcn.rs, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_A", &fcn.a, &outfile.status());
-        fits_get_colnum(*outfile.fptr(), CASEINSEN, "FAKE_I", &fcn.i, &outfile.status());
+        fcn.skipdet = outfile.columnNumber("SKIPDET");
+        fcn.period = outfile.columnNumber("FAKE_PERIOD");
+        fcn.width = outfile.columnNumber("FAKE_WIDTH");
+        fcn.depth = outfile.columnNumber("FAKE_DEPTH");
+        fcn.epoch = outfile.columnNumber("FAKE_EPOCH");
+        fcn.rp = outfile.columnNumber("FAKE_RP");
+        fcn.rs = outfile.columnNumber("FAKE_RS");
+        fcn.a = outfile.columnNumber("FAKE_A");
+        fcn.i = outfile.columnNumber("FAKE_I");
         outfile.check();
 
 
@@ -522,10 +520,7 @@ int main(int argc, char *argv[])
         /* Get a list of the objects in the file */
         stringlist ObjectNames;
         infile.moveHDU("CATALOGUE");
-
-        int obj_id_colno = -1;
-        fits_get_colnum(*infile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colno, &infile.status());
-        infile.check();
+        int obj_id_colno = infile.columnNumber("OBJ_ID");
 
         /* Read the data in as strings */
         int dispwidth;
@@ -680,13 +675,10 @@ int main(int argc, char *argv[])
 
 
             /* Write the new name to the obj_id column */
-            int obj_id_colnum;
-            fits_get_colnum(*outfile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colnum, &outfile.status());
-
             string NewName = AlterObjectName(Current.name);
             char *cstr = new char[26];
             strcpy(cstr, NewName.c_str());
-            fits_write_col_str(*outfile.fptr(), obj_id_colnum, CatalogueIndex, 1, 1, &cstr, &outfile.status());
+            fits_write_col_str(*outfile.fptr(), obj_id_colno, CatalogueIndex, 1, 1, &cstr, &outfile.status());
             delete[] cstr;
             
             /* Now validate */
