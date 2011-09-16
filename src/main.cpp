@@ -519,9 +519,7 @@ int main(int argc, char *argv[])
 
         /* Get a list of the objects in the file */
         stringlist ObjectNames;
-        int obj_id_colno = -1;
-        fits_get_colnum(*infile.fptr(), CASEINSEN, "OBJ_ID", &obj_id_colno, &infile.status());
-        infile.check();
+        int obj_id_colno = outfile.columnNumber("OBJ_ID");
 
         /* Read the data in as strings */
         int dispwidth;
