@@ -15,6 +15,7 @@ wasp12 = {'p': 1.0914222,
         }
 
 
+
 rJup = 71492E3
 rSun = 6.995E8
 AU = 1.496E11
@@ -88,6 +89,14 @@ def main(args):
     Reversed = Index[::-1]
     for i in Reversed:
         print i
+
+        CurrentModel = {'epoch': Epochs[i],
+                'period': Periods[i],
+                'rp': RPlanets[i],
+                'rs': RStars[i],
+                'i': Inclinations[i],
+                'a': Separations[i],
+                }
         cla()
         Time = wd2jd(f['hjd'].section[i])
         Epoch = Epochs[i]
