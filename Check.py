@@ -110,8 +110,9 @@ def main(args):
         title("Depth: %f" % (Depths[i],))
 
         axhline(1. - Depths[i])
-        axvline(-Widths[i] / Period)
-        axvline(Widths[i] / Period)
+        axvline(-Widths[i]/2. / CurrentModel['period'], color='k')
+        axvline(Widths[i]/2. / CurrentModel['period'], color='k', label='Original')
+
         PJWWidth = PJWMethod(CurrentModel) / secondsInDay
         axvline(-PJWWidth/2., color='b')
         axvline(PJWWidth/2., color='b', label="PJW")
