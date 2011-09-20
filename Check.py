@@ -14,6 +14,46 @@ wasp12 = {'p': 1.0914222,
         'e': 2454508.97605
         }
 
+
+
+rJup = 71492E3
+rSun = 6.995E8
+AU = 1.496E11
+mSun = 1.9891E30
+secondsInMinute = 60.
+secondsInHour = 60. * secondsInMinute
+secondsInDay = 24. * secondsInHour
+radiansInDegree = 2. * 3.14 / 360.
+degreesInRadian = 360. / 2. / 3.14
+GravConst = 6.67E-11
+tSun = 5778.
+
+
+def PJWMethod(m):
+    ''' 
+    Returns the transit width based on Pete's lecture notes
+    '''
+    Norm = m['period'] / pi
+    FirstTerm = ((m['rp'] + m['rs']) / m['a'])**2
+    SecondTerm = (cos(m['i'])**2)
+
+    InsideSqrt = FirstTerm - SecondTerm
+    Width = Norm * arcsin(sqrt(InsideSqrt))
+    return Width
+
+def JWMethod(m):
+    '''
+    Returns the transit width based on Joshua Winn's method
+    '''
+    Norm = m['period'] / pi
+    Norm2 = m['rs'] / m['a']
+    k = m['rp'] / m['rs']
+    b = m['a'] * cos(m['i']) / m['rs']
+    InsideSqrt = ((1+k)**2 - b**2) / sin(m['i'])
+    Width = Norm * arcsin(Norm2 * sqrt(InsideSqrt))
+    return Width
+
+
 def main(args):
     f  = pyfits.open(args.file)
 
@@ -26,49 +66,81 @@ def main(args):
     Epochs = Catalogue.field("FAKE_EPOCH")
     Periods = Catalogue.field("FAKE_PERIOD")
     Depths = Catalogue.field("FAKE_DEPTH")
-    Widths = Catalogue.field("FAKE_WIDTH")
-    Index, = where(Widths!=0)
+    RPlanets = Catalogue.field('FAKE_RP')
+    RStars = Catalogue.field('FAKE_RS')
+    Inclinations = Catalogue.field("FAKE_I")
+    Separations = Catalogue.field("FAKE_A")
+    Names = Catalogue.field('OBJ_ID')
+    #Index, = where(Widths!=0)
+
+    Index = []
+    for i in range(Names.size):
+        if "SYNTH" in Names[i]:
+            Index.append(i)
+
+
+
+    Index = array(Index)
 
     pp = PdfPages("output.pdf")
-    pp2 = PdfPages('wasp12phase.pdf')
+    #pp2 = PdfPages('wasp12phase.pdf')
 
     ##ion()
     Reversed = Index[::-1]
-    for i in Reversed[:20]:
-        print i
+    for i in Reversed:
+
+        CurrentModel = {'epoch': Epochs[i],
+                'period': Periods[i],
+                'rp': RPlanets[i],
+                'rs': RStars[i],
+                'i': Inclinations[i],
+                'a': Separations[i],
+                }
+
+        print i, CurrentModel
+
         cla()
         Time = wd2jd(f['hjd'].section[i])
-        Epoch = Epochs[i]
-        Period = Periods[i]
 
-        Phase = ((Time - Epoch) / (Period / 86400.)) % 1.0
+        Phase = ((Time - CurrentModel['epoch']) / (CurrentModel['period'] / secondsInDay)) % 1.0
         Phase[Phase>0.5] -= 1.0
         Lightcurve = f['flux'].section[i]
 
         Lightcurve /= median(Lightcurve)
 
         plot(Phase, Lightcurve, 'r,')
-        title("Depth: %f, width: %f" % (Depths[i], Widths[i] / Period))
+        title("Depth: %f" % (Depths[i],))
 
         axhline(1. - Depths[i])
-        axvline(-Widths[i] / Period)
-        axvline(Widths[i] / Period)
+        axvline(-Widths[i]/2. / CurrentModel['period'], color='k')
+        axvline(Widths[i]/2. / CurrentModel['period'], color='k', label='Original')
+
+        PJWWidth = PJWMethod(CurrentModel) / secondsInDay
+        axvline(-PJWWidth/2., color='b')
+        axvline(PJWWidth/2., color='b', label="PJW")
+        JWWidth = JWMethod(CurrentModel) / secondsInDay
+        axvline(-JWWidth/2., color='g')
+        axvline(JWWidth/2., color='g', label="JW")
+
+        # print the ratio of widths
+        print "Ratio: %f" % (((Widths[i] / 2.) / (PJWWidth/2.)) / CurrentModel['period'],)
 
         xlim(-0.3, 0.3)
+        ylim(0.5, 1.5)
 
         pp.savefig()
 
-        cla()
-        Phase = ((Time - wasp12['e']) / wasp12['p']) % 1.0
-        Phase[Phase>0.5] -= 1.0
+        #cla()
+        #Phase = ((Time - wasp12['e']) / wasp12['p']) % 1.0
+        #Phase[Phase>0.5] -= 1.0
 
-        plot(Phase, Lightcurve, 'r,')
-        title("WASP-12b phase")
-        xlim(-0.3, 0.3)
-        pp2.savefig()
+        #plot(Phase, Lightcurve, 'r,')
+        #title("WASP-12b phase")
+        #xlim(-0.3, 0.3)
+        #pp2.savefig()
 
     pp.close()
-    pp2.close()
+    #pp2.close()
 
     #print Epochs[Index]
 
