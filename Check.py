@@ -120,6 +120,7 @@ def main(args):
         axvline(JWWidth/2., color='g', label="JW")
 
         xlim(-0.3, 0.3)
+        ylim(0.5, 1.5)
 
         pp.savefig()
 
