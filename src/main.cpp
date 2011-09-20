@@ -96,7 +96,7 @@ double WidthFromParams(const Model &m)
     /* Square it */
     FirstTerm *= FirstTerm;
     
-    const double InsideSqrt = FirstTerm - cos(m.i * radiansInDegree);
+    const double InsideSqrt = FirstTerm - (cos(m.i * radiansInDegree) * cos(m.i * radiansInDegree));
     
     /* Check that InsideSqrt is not <= 0 */
     if (InsideSqrt <= 0.0)
