@@ -107,7 +107,7 @@ def main(args):
         Lightcurve /= median(Lightcurve)
 
         plot(Phase, Lightcurve, 'r,')
-        title("Depth: %f, width: %f" % (Depths[i], Widths[i] / Period))
+        title("Depth: %f" % (Depths[i],))
 
         axhline(1. - Depths[i])
         axvline(-Widths[i] / Period)
