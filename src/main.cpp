@@ -40,6 +40,9 @@ struct ConfigContainer
     string OutputFilename;
 };
 
+template <typename T>
+T square(T val) { return val * val; }
+
 const double jd_ref = 2453005.5;
 
 double wd2jd(double wd)
@@ -91,12 +94,9 @@ double WidthFromParams(const Model &m)
         return 0;
     }
     
-    double FirstTerm = ((m.rp * rJup) + (m.rs * rSun)) / (m.a * AU);
-    
-    /* Square it */
-    FirstTerm *= FirstTerm;
-    
-    const double InsideSqrt = FirstTerm - cos(m.i * radiansInDegree);
+    const double FirstTerm = square(((m.rp * rJup) + (m.rs * rSun)) / (m.a * AU));
+    const double SecondTerm = square(cos(m.i * radiansInDegree));
+    const double InsideSqrt = FirstTerm - SecondTerm;
     
     /* Check that InsideSqrt is not <= 0 */
     if (InsideSqrt <= 0.0)
@@ -182,8 +182,6 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
 }
 
 
-template <typename T>
-T square(T val) { return val * val; }
 
 struct FalseColumnNumbers
 {
