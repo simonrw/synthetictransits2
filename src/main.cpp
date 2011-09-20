@@ -40,6 +40,9 @@ struct ConfigContainer
     string OutputFilename;
 };
 
+template <typename T>
+T square(T val) { return val * val; }
+
 const double jd_ref = 2453005.5;
 
 double wd2jd(double wd)
@@ -179,8 +182,6 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
 }
 
 
-template <typename T>
-T square(T val) { return val * val; }
 
 struct FalseColumnNumbers
 {
