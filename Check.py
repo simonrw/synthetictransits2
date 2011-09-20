@@ -99,10 +99,8 @@ def main(args):
                 }
         cla()
         Time = wd2jd(f['hjd'].section[i])
-        Epoch = Epochs[i]
-        Period = Periods[i]
 
-        Phase = ((Time - Epoch) / (Period / 86400.)) % 1.0
+        Phase = ((Time - CurrentModel['epoch']) / (CurrentModel['period'] / secondsInDay)) % 1.0
         Phase[Phase>0.5] -= 1.0
         Lightcurve = f['flux'].section[i]
 
