@@ -112,6 +112,12 @@ def main(args):
         axhline(1. - Depths[i])
         axvline(-Widths[i] / Period)
         axvline(Widths[i] / Period)
+        PJWWidth = PJWMethod(CurrentModel) / secondsInDay
+        axvline(-PJWWidth/2., color='b')
+        axvline(PJWWidth/2., color='b', label="PJW")
+        JWWidth = JWMethod(CurrentModel) / secondsInDay
+        axvline(-JWWidth/2., color='g')
+        axvline(JWWidth/2., color='g', label="JW")
 
         xlim(-0.3, 0.3)
 
