@@ -85,7 +85,6 @@ vector<double> GenerateSynthetic(const vector<double> &jd, const Model &m)
 //    cout << "Normalisation constant: " << normalisedDistance << endl;
 
     const double dr = 0.001;
-    const double dt = 60.;
 
     /* Package the coefficients into a vector */
     vector<double> coeffs(5);
