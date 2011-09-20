@@ -65,8 +65,21 @@ def main(args):
     Epochs = Catalogue.field("FAKE_EPOCH")
     Periods = Catalogue.field("FAKE_PERIOD")
     Depths = Catalogue.field("FAKE_DEPTH")
-    Widths = Catalogue.field("FAKE_WIDTH")
-    Index, = where(Widths!=0)
+    RPlanets = Catalogue.field('FAKE_RP')
+    RStars = Catalogue.field('FAKE_RS')
+    Inclinations = Catalogue.field("FAKE_I")
+    Separations = Catalogue.field("FAKE_A")
+    Names = Catalogue.field('OBJ_ID')
+    #Index, = where(Widths!=0)
+
+    Index = []
+    for i in range(Names.size):
+        if "SYNTH" in Names[i]:
+            Index.append(i)
+
+
+
+    Index = array(Index)
 
     pp = PdfPages("output.pdf")
     pp2 = PdfPages('wasp12phase.pdf')
