@@ -14,6 +14,45 @@ wasp12 = {'p': 1.0914222,
         'e': 2454508.97605
         }
 
+
+rJup = 71492E3
+rSun = 6.995E8
+AU = 1.496E11
+mSun = 1.9891E30
+secondsInMinute = 60.
+secondsInHour = 60. * secondsInMinute
+secondsInDay = 24. * secondsInHour
+radiansInDegree = 2. * 3.14 / 360.
+degreesInRadian = 360. / 2. / 3.14
+GravConst = 6.67E-11
+tSun = 5778.
+
+
+def PJWMethod(m):
+    ''' 
+    Returns the transit width based on Pete's lecture notes
+    '''
+    Norm = m['period'] / pi
+    FirstTerm = ((m['rp'] + m['rs']) / m['a'])**2
+    SecondTerm = (cos(m['i'])**2)
+
+    InsideSqrt = FirstTerm - SecondTerm
+    Width = Norm * arcsin(sqrt(InsideSqrt))
+    return Width
+
+def JWMethod(m):
+    '''
+    Returns the transit width based on Joshua Winn's method
+    '''
+    Norm = m['period'] / pi
+    Norm2 = m['rs'] / m['a']
+    k = m['rp'] / m['rs']
+    b = m['a'] * cos(m['i']) / m['rs']
+    InsideSqrt = ((1+k)**2 - b**2) / sin(m['i'])
+    Width = Norm * arcsin(Norm2 * sqrt(InsideSqrt))
+    return Width
+
+
 def main(args):
     f  = pyfits.open(args.file)
 
