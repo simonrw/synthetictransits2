@@ -88,7 +88,6 @@ def main(args):
     ##ion()
     Reversed = Index[::-1]
     for i in Reversed:
-        print i
 
         CurrentModel = {'epoch': Epochs[i],
                 'period': Periods[i],
@@ -97,6 +96,9 @@ def main(args):
                 'i': Inclinations[i],
                 'a': Separations[i],
                 }
+
+        print i, CurrentModel
+
         cla()
         Time = wd2jd(f['hjd'].section[i])
 
