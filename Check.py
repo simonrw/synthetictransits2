@@ -124,9 +124,9 @@ def main(args):
 
         pp.savefig()
 
-        cla()
-        Phase = ((Time - wasp12['e']) / wasp12['p']) % 1.0
-        Phase[Phase>0.5] -= 1.0
+        #cla()
+        #Phase = ((Time - wasp12['e']) / wasp12['p']) % 1.0
+        #Phase[Phase>0.5] -= 1.0
 
         #plot(Phase, Lightcurve, 'r,')
         #title("WASP-12b phase")
