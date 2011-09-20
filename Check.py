@@ -86,7 +86,7 @@ def main(args):
 
     ##ion()
     Reversed = Index[::-1]
-    for i in Reversed[:20]:
+    for i in Reversed:
         print i
         cla()
         Time = wd2jd(f['hjd'].section[i])
