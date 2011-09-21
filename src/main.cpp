@@ -370,12 +370,17 @@ int main(int argc, char *argv[])
 
 
         NewFits outfile("!" + output_arg.getValue());
+        
+        /* Copy the primary hdu across */
+        int status = 0;
+        fits_copy_hdu(*infile.fptr(), *outfile.fptr(), 0, &status);
+        Fits::check(status);
 
         /* Add the transinj key */
-        outfile.moveHDU(1);
         bool transinj_val = true;
         fits_write_key(*outfile.fptr(), TLOGICAL, "TRANSINJ", &transinj_val, "Contains false transits", &outfile.status());
         outfile.check();
+        
 
         /* Start by getting file information from the input */
         int nhdus = 0;
