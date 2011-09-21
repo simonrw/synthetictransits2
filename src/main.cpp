@@ -377,7 +377,6 @@ int main(int argc, char *argv[])
         Fits::check(status);
 
         /* Add the transinj key */
-        outfile.moveHDU(1);
         bool transinj_val = true;
         fits_write_key(*outfile.fptr(), TLOGICAL, "TRANSINJ", &transinj_val, "Contains false transits", &outfile.status());
         outfile.check();
