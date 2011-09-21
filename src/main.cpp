@@ -381,7 +381,6 @@ int main(int argc, char *argv[])
         fits_write_key(*outfile.fptr(), TLOGICAL, "TRANSINJ", &transinj_val, "Contains false transits", &outfile.status());
         outfile.check();
         
-        return 0;
 
         /* Start by getting file information from the input */
         int nhdus = 0;
