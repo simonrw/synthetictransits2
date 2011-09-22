@@ -118,15 +118,6 @@ def main(args):
         axvline(-Widths[i]/2. / CurrentModel['period'], color='k')
         axvline(Widths[i]/2. / CurrentModel['period'], color='k', label='Original')
 
-        #PJWWidth = PJWMethod(CurrentModel) / secondsInDay
-        #axvline(-PJWWidth/2., color='b')
-        #axvline(PJWWidth/2., color='b', label="PJW")
-        #JWWidth = JWMethod(CurrentModel) / secondsInDay
-        #axvline(-JWWidth/2., color='g')
-        #axvline(JWWidth/2., color='g', label="JW")
-
-        # print the ratio of widths
-        #print "Ratio: %f" % (((Widths[i] / 2.) / (PJWWidth/2.)) / CurrentModel['period'],)
 
         xlim(-0.3, 0.3)
         ylim(0.5, 1.5)
