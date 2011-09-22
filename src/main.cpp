@@ -634,7 +634,7 @@ int main(int argc, char *argv[])
             }
             
             /* Add a transit model to the data */
-            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
+            pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
 
             
             /* And update the catalogue false transits information */
