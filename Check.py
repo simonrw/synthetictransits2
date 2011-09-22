@@ -87,7 +87,10 @@ def main(args):
 
     ##ion()
     Reversed = Index[::-1]
-    for i in Reversed:
+
+    nObjects = 20
+    skipStep = 100
+    for i in Reversed[:nObjects*skipStep:skipStep]:
 
         CurrentModel = {'epoch': Epochs[i],
                 'period': Periods[i],
