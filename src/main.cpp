@@ -118,7 +118,7 @@ double WidthFromParams(const Model &m)
 }
 
 template <typename T>
-T WeightedMedian(const vector<T> &data, const double siglevel)
+T WeightedMedian(const vector<T> &data, const double siglevel, long &npts)
 {
     vector<T> buffer;
     const size_t N = data.size();
@@ -135,6 +135,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
         }
     }
     av /= (double)ValidPoints;
+    npts = ValidPoints;
     
     /* Put in a check for if the av is 0 */
     if (av == 0)
