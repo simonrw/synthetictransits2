@@ -216,9 +216,12 @@ long indexOf(const stringlist &stringlist, const string &comp)
     throw runtime_error("Cannot find object");
 }
 
-void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
+pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
 {
+    /* returns a pair of the mean flux and the number 
+     of valid points in the lightcurve */
     f.moveHDU("HJD");
+    pair<double, long> OutputData;
 
     vector<double> jd(length);
     
@@ -242,7 +245,8 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &OriginalFlux[0], 0, &f.status());
     
     /* Normalise to the weighted median flux level */
-    double WeightedMed = WeightedMedian(OriginalFlux, 2.5);
+    double WeightedMed = WeightedMedian(OriginalFlux, 2.5, OutputData.second);
+    OutputData.first = WeightedMed;
     
     vector<double> TransitAdded(length);
     double result = 0;
@@ -271,6 +275,8 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
     
     fits_write_img(*f.fptr(), TDOUBLE, startindex, length, &TransitAdded[0], &f.status());
     f.check();
+    
+    return OutputData;
 
 
 }
