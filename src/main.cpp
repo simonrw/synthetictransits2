@@ -118,7 +118,7 @@ double WidthFromParams(const Model &m)
 }
 
 template <typename T>
-T WeightedMedian(const vector<T> &data, const double siglevel)
+T WeightedMedian(const vector<T> &data, const double siglevel, long &npts)
 {
     vector<T> buffer;
     const size_t N = data.size();
@@ -135,6 +135,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel)
         }
     }
     av /= (double)ValidPoints;
+    npts = ValidPoints;
     
     /* Put in a check for if the av is 0 */
     if (av == 0)
@@ -215,9 +216,12 @@ long indexOf(const stringlist &stringlist, const string &comp)
     throw runtime_error("Cannot find object");
 }
 
-void AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
+pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
 {
+    /* returns a pair of the mean flux and the number 
+     of valid points in the lightcurve */
     f.moveHDU("HJD");
+    pair<double, long> OutputData;
 
     vector<double> jd(length);
     
@@ -241,7 +245,8 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &OriginalFlux[0], 0, &f.status());
     
     /* Normalise to the weighted median flux level */
-    double WeightedMed = WeightedMedian(OriginalFlux, 2.5);
+    double WeightedMed = WeightedMedian(OriginalFlux, 2.5, OutputData.second);
+    OutputData.first = WeightedMed;
     
     vector<double> TransitAdded(length);
     double result = 0;
@@ -270,6 +275,8 @@ void AlterLightcurveData(Fits &f, const int startindex, const int length, const 
     
     fits_write_img(*f.fptr(), TDOUBLE, startindex, length, &TransitAdded[0], &f.status());
     f.check();
+    
+    return OutputData;
 
 
 }
@@ -627,7 +634,7 @@ int main(int argc, char *argv[])
             }
             
             /* Add a transit model to the data */
-            AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
+            pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
 
             
             /* And update the catalogue false transits information */
@@ -683,6 +690,12 @@ int main(int argc, char *argv[])
             strcpy(cstr, NewName.c_str());
             fits_write_col_str(*outfile.fptr(), obj_id_colno, CatalogueIndex, 1, 1, &cstr, &outfile.status());
             delete[] cstr;
+            
+            /* Update the flux mean and npts columns */
+            int npts_col = outfile.columnNumber("NPTS");
+            int flux_mean_col = outfile.columnNumber("FLUX_MEAN");
+            fits_write_col(*outfile.fptr(), TLONG, npts_col, CatalogueIndex, 1, 1, &LightcurveInfo.second, &outfile.status());
+            fits_write_col(*outfile.fptr(), TFLOAT, flux_mean_col, CatalogueIndex, 1, 1, &LightcurveInfo.first, &outfile.status());
             
             /* Now validate */
             outfile.check();
