@@ -104,10 +104,11 @@ def main(args):
 
         cla()
         Time = wd2jd(f['hjd'].section[i])
+        Lightcurve = f['flux'].section[i]
+
 
         Phase = ((Time - CurrentModel['epoch']) / (CurrentModel['period'] / secondsInDay)) % 1.0
         Phase[Phase>0.5] -= 1.0
-        Lightcurve = f['flux'].section[i]
 
         Lightcurve /= median(Lightcurve)
 
