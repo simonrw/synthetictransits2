@@ -53,6 +53,11 @@ def JWMethod(m):
     Width = Norm * arcsin(Norm2 * sqrt(InsideSqrt))
     return Width
 
+def BoxCoords(width, depth, xlim):
+    x = [xlim[0], -width/2., -width/2., width/2., width/2., xlim[1]]
+    y = [1., 1., 1.-depth, 1.-depth, 1., 1.]
+    return x, y
+
 
 def main(args):
     f  = pyfits.open(args.file)
@@ -125,13 +130,16 @@ def main(args):
         plot(Phase, Lightcurve, 'k,')
         title("Depth: %f" % (Depths[i],))
 
-        axhline(1. - Depths[i])
-        axvline(-Widths[i]/2. / CurrentModel['period'], color='k')
-        axvline(Widths[i]/2. / CurrentModel['period'], color='k', label='Original')
+        #axhline(1. - Depths[i])
+        #axvline(-Widths[i]/2. / CurrentModel['period'], color='k')
+        #axvline(Widths[i]/2. / CurrentModel['period'], color='k', label='Original')
 
 
         xlim(-0.3, 0.3)
         ylim(0.5, 1.5)
+
+        BoxX, BoxY = BoxCoords(Widths[i] / CurrentModel['period'], Depths[i], xlim())
+        plot(BoxX, BoxY, 'r-')
 
         pp.savefig()
 
