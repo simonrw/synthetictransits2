@@ -695,7 +695,7 @@ int main(int argc, char *argv[])
             int npts_col = outfile.columnNumber("NPTS");
             int flux_mean_col = outfile.columnNumber("FLUX_MEAN");
             fits_write_col(*outfile.fptr(), TLONG, npts_col, CatalogueIndex, 1, 1, &LightcurveInfo.second, &outfile.status());
-            fits_write_col(*outfile.fptr(), TFLOAT, flux_mean_col, CatalogueIndex, 1, 1, &LightcurveInfo.first, &outfile.status());
+            fits_write_col(*outfile.fptr(), TDOUBLE, flux_mean_col, CatalogueIndex, 1, 1, &LightcurveInfo.first, &outfile.status());
             
             /* Now validate */
             outfile.check();
