@@ -106,6 +106,10 @@ def main(args):
         Time = wd2jd(f['hjd'].section[i])
         Lightcurve = f['flux'].section[i]
 
+        # remove nans
+        GoodIndex = (Lightcurve==Lightcurve) & (Time==Time)
+        Lightcurve = Lightcurve[GoodIndex]
+        Time = Time[GoodIndex]
 
         Phase = ((Time - CurrentModel['epoch']) / (CurrentModel['period'] / secondsInDay)) % 1.0
         Phase[Phase>0.5] -= 1.0
