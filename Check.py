@@ -105,18 +105,24 @@ def main(args):
         cla()
         Time = wd2jd(f['hjd'].section[i])
         Lightcurve = f['flux'].section[i]
+        Errors = f['fluxerr'].section[i]
+
 
         # remove nans
-        GoodIndex = (Lightcurve==Lightcurve) & (Time==Time)
+        GoodIndex = (Lightcurve==Lightcurve) & (Time==Time) & (Errors==Errors)
         Lightcurve = Lightcurve[GoodIndex]
         Time = Time[GoodIndex]
+        Errors = Errors[GoodIndex]
 
         Phase = ((Time - CurrentModel['epoch']) / (CurrentModel['period'] / secondsInDay)) % 1.0
         Phase[Phase>0.5] -= 1.0
 
-        Lightcurve /= median(Lightcurve)
+        MedVal = median(Lightcurve)
+        Lightcurve /= MedVal
+        Errors /= MedVal
 
-        plot(Phase, Lightcurve, 'r,')
+        errorbar(Phase, Lightcurve, Errors, ls="None", color="#AAAAAA")
+        plot(Phase, Lightcurve, 'k,')
         title("Depth: %f" % (Depths[i],))
 
         axhline(1. - Depths[i])
@@ -133,7 +139,8 @@ def main(args):
         Phase = ((Time - wasp12['e']) / wasp12['p']) % 1.0
         Phase[Phase>0.5] -= 1.0
 
-        plot(Phase, Lightcurve, 'r,')
+        errorbar(Phase, Lightcurve, Errors, ls="None", color="#AAAAAA")
+        plot(Phase, Lightcurve, 'k,')
         title("WASP-12b phase")
         xlim(-0.3, 0.3)
         pp2.savefig()
