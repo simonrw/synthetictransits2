@@ -336,6 +336,10 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
     fits_get_num_cols(*infile.fptr(), &ncols, &infile.status());
     infile.check();
 
+    for (int i=1; i<=ncols; ++i)
+    {
+    }
+
 
 }
 
