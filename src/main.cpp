@@ -331,6 +331,11 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
     /* Current hdu must be on a binary table */
     const long nrows = infile.nrows();
 
+    /* Get the number of columns */
+    int ncols;
+    fits_get_num_cols(*infile.fptr(), &ncols, &infile.status());
+    infile.check();
+
 
 }
 
