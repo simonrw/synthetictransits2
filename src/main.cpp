@@ -332,6 +332,9 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 
 int main(int argc, char *argv[])
 {
+
+    return 0;
+
     try
     {
         TCLAP::CmdLine cmd("");
