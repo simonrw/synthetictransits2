@@ -328,6 +328,10 @@ void OverPrint(const T &val)
 
 void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 {
+    /* Current hdu must be on a binary table */
+    const long nrows = infile.nrows();
+
+
 }
 
 int main(int argc, char *argv[])
