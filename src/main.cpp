@@ -338,6 +338,8 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 
     for (int i=1; i<=ncols; ++i)
     {
+        /* Check for data type */
+        int typecode;
     }
 
 
