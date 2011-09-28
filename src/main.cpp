@@ -725,6 +725,9 @@ int main(int argc, char *argv[])
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
 
+            /* Copy the original object data across */
+            CopyTableRow(outfile, SourceIndex+1, CatalogueIndex);
+
             /* Need to do some conversion but have to create a temp variable for this */
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
