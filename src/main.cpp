@@ -732,7 +732,7 @@ int main(int argc, char *argv[])
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
-            tmp = Current.epoch;
+            tmp = jd2wd(Current.epoch);
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
             tmp = Current.rp * rJup;
