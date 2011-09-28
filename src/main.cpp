@@ -422,6 +422,12 @@ int main(int argc, char *argv[])
 
     cout << "Found " << nrows << " rows" << endl;
 
+    for (int i=2; i<=nrows; ++i)
+    {
+        CopyTableRow(infile, 1, i);
+    }
+
+
     return 0;
 
     try
