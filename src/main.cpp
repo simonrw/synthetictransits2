@@ -348,10 +348,36 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
         long width;
         fits_get_coltype(*infile.fptr(), i, &typecode, &repeat, &width, &infile.status());
         infile.check();
+
+        switch (typecode)
+        {
+            case TDOUBLE:
+                break;
+            case TSTRING:
+                break;
+            case TLONG:
+                break;
+            case TINT:
+                break;
+            case TFLOAT:
+                break;
+            case TSHORT:
+                break;
+            case TLOGICAL:
+                break;
+            case TBIT:
+                break;
+            case TBYTE:
+                break;
+            default:
+                throw runtime_error("Unknown column type found");
+        }
+
     }
 
 
 }
+
 
 int main(int argc, char *argv[])
 {
