@@ -352,23 +352,54 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
         switch (typecode)
         {
             case TDOUBLE:
-                break;
+                {
+                    double tmp;
+                    fits_read_col(*infile.fptr(), TDOUBLE, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TDOUBLE, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
             case TSTRING:
-                break;
+                {
+                    char buf[repeat+1], *bufptr = (char*)buf;
+
+                    fits_read_col_str(*infile.fptr(), i, origindex, 1, 1, "", &bufptr, NULL, &infile.status());
+                    fits_write_col_str(*infile.fptr(), i, newindex, 1, 1, &bufptr, &infile.status());
+                    infile.check();
+                    break;
+                }
             case TLONG:
-                break;
+                {
+                    long tmp;
+                    fits_read_col(*infile.fptr(), TLONG, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TLONG, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
             case TINT:
-                break;
+                {
+                    int tmp;
+                    fits_read_col(*infile.fptr(), TINT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TINT, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
             case TFLOAT:
-                break;
+                {
+                    float tmp;
+                    fits_read_col(*infile.fptr(), TFLOAT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TFLOAT, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
             case TSHORT:
-                break;
-            case TLOGICAL:
-                break;
-            case TBIT:
-                break;
-            case TBYTE:
-                break;
+                {
+                    short int tmp;
+                    fits_read_col(*infile.fptr(), TSHORT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TSHORT, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
             default:
                 throw runtime_error("Unknown column type found");
         }
