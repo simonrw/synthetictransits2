@@ -340,6 +340,14 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
     {
         /* Check for data type */
         int typecode;
+        
+        /* Get the repeat count for each cell */
+        long repeat; 
+
+        /* Get the data width (unused) */
+        long width;
+        fits_get_coltype(*infile.fptr(), i, &typecode, &repeat, &width, &infile.status());
+        infile.check();
     }
 
 
