@@ -355,6 +355,7 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 
 int main(int argc, char *argv[])
 {
+    Fits infile("/tmp/SyntheticLightcurves2/data.fits");
 
     return 0;
 
