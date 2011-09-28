@@ -347,9 +347,6 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 
 int main(int argc, char *argv[])
 {
-
-    return 0;
-
     try
     {
         TCLAP::CmdLine cmd("");
@@ -488,11 +485,12 @@ int main(int argc, char *argv[])
                     cout << ", " << ncols << " columms";
 
                     /* Append extra rows */
+                    /* DO NOT DO THIS HERE */
 
-                    fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
-                    outfile.check();
+                    //fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
+                    //outfile.check();
 
-                    cout << " -> " << nrows + nextra << " rows";
+                    //cout << " -> " << nrows + nextra << " rows";
 
                     /* Need 9 extra columns */
 
@@ -524,6 +522,7 @@ int main(int argc, char *argv[])
 
 
         ts.stop("copy");
+
 
         /* File copy finished */
         
@@ -661,6 +660,12 @@ int main(int argc, char *argv[])
             
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
+
+            /* Copy the original catalogue data across and append the rows
+             *
+             * Luckily cfistio has a function for this! */
+            fits_copy_rows(*outfile.fptr(), *outfile.fptr(), SourceIndex + 1, 1, &outfile.status());
+            outfile.check();
 
             /* Need to do some conversion but have to create a temp variable for this */
             double tmp = Current.period * secondsInDay;
