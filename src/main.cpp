@@ -355,7 +355,8 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 
 int main(int argc, char *argv[])
 {
-    Fits infile("/home/astro/phrfbf/work/NGTS/extractedFits/20100204_ap4.0.fits");
+    system("cp /home/astro/phrfbf/work/NGTS/extractedFits/20100204_ap4.0.fits ./tmp.fits");
+    Fits infile("tmp.fits");
     infile.moveHDU("CATALOGUE");
 
     long nrows;
