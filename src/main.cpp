@@ -326,6 +326,7 @@ void OverPrint(const T &val)
 
 }
 
+/* Function to copy a row from a table across to a new position in the same table */
 void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 {
     /* Current hdu must be on a binary table */
