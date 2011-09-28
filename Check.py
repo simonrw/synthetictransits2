@@ -68,7 +68,7 @@ def main(args):
 
     ## get the objects where the width is not 0
     Widths = Catalogue.field("FAKE_WIDTH")
-    Epochs = Catalogue.field("FAKE_EPOCH")
+    Epochs = wd2jd(Catalogue.field("FAKE_EPOCH"))
     Periods = Catalogue.field("FAKE_PERIOD")
     Depths = Catalogue.field("FAKE_DEPTH")
     RPlanets = Catalogue.field('FAKE_RP')

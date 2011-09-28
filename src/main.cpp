@@ -326,6 +326,91 @@ void OverPrint(const T &val)
 
 }
 
+/* Function to copy a row from a table across to a new position in the same table */
+void CopyTableRow(Fits &infile, const long origindex, const long newindex)
+{
+    /* Current hdu must be on a binary table */
+    const long nrows = infile.nrows();
+
+    /* Get the number of columns */
+    int ncols;
+    fits_get_num_cols(*infile.fptr(), &ncols, &infile.status());
+    infile.check();
+
+    for (int i=1; i<=ncols; ++i)
+    {
+        /* Check for data type */
+        int typecode;
+        
+        /* Get the repeat count for each cell */
+        long repeat; 
+
+        /* Get the data width (unused) */
+        long width;
+        fits_get_coltype(*infile.fptr(), i, &typecode, &repeat, &width, &infile.status());
+        infile.check();
+
+        switch (typecode)
+        {
+            case TDOUBLE:
+                {
+                    double tmp;
+                    fits_read_col(*infile.fptr(), TDOUBLE, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TDOUBLE, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
+            case TSTRING:
+                {
+                    char buf[repeat+1], *bufptr = (char*)buf;
+
+                    fits_read_col_str(*infile.fptr(), i, origindex, 1, 1, "", &bufptr, NULL, &infile.status());
+                    fits_write_col_str(*infile.fptr(), i, newindex, 1, 1, &bufptr, &infile.status());
+                    infile.check();
+                    break;
+                }
+            case TLONG:
+                {
+                    long tmp;
+                    fits_read_col(*infile.fptr(), TLONG, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TLONG, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
+            case TINT:
+                {
+                    int tmp;
+                    fits_read_col(*infile.fptr(), TINT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TINT, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
+            case TFLOAT:
+                {
+                    float tmp;
+                    fits_read_col(*infile.fptr(), TFLOAT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TFLOAT, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
+            case TSHORT:
+                {
+                    short int tmp;
+                    fits_read_col(*infile.fptr(), TSHORT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                    fits_write_col(*infile.fptr(), TSHORT, i, newindex, 1, 1, &tmp, &infile.status());
+                    infile.check();
+                    break;
+                }
+            default:
+                throw runtime_error("Unknown column type found");
+        }
+
+    }
+
+
+}
+
+
 int main(int argc, char *argv[])
 {
     try
@@ -640,11 +725,14 @@ int main(int argc, char *argv[])
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
 
+            /* Copy the original object data across */
+            CopyTableRow(outfile, SourceIndex+1, CatalogueIndex);
+
             /* Need to do some conversion but have to create a temp variable for this */
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
-            tmp = Current.epoch;
+            tmp = jd2wd(Current.epoch);
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
             
             tmp = Current.rp * rJup;
