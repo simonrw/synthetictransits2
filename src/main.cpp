@@ -308,6 +308,12 @@ string AlterObjectName(const string &OriginalName)
     if the object already exists. Therefore a new naming scheme must
 	be created.  */
     
+    /* Counter variable to ensure uniqueness */
+    static unsigned long counter;
+    
+    /* Increment the counter */
+    counter++;
+    
     /* Split the string at the J character */
     stringlist parts = split(OriginalName, 'J');
 
