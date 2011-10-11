@@ -300,7 +300,10 @@ stringlist split(const string &s, char delim)
 
 string AlterObjectName(const string &OriginalName)
 {
-
+    /* The name MUST be unique as Orion uses a dictionary to see
+    if the object already exists. Therefore a new naming scheme must
+	be created.  */
+    
     /* Split the string at the J character */
     stringlist parts = split(OriginalName, 'J');
 
