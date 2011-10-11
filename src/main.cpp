@@ -324,11 +324,18 @@ string AlterObjectName(const string &OriginalName)
     }
 
     stringstream NewName;
-    NewName << "1SYNTH J" << parts[1];
+    NewName.flags(ios::left);
+    NewName << setw(7) << counter << "J" << parts[1];
+    string ResultingString = NewName.str();
+
+    /* Allow up to 10 million objects to be created */
+    if (ResultingString.size() > 26)
+    {
+        throw runtime_error("Too many objects in file (>1000000)");
+    }
 
 
-
-    return NewName.str();
+    return ResultingString;
 }
 
 template <typename T>
