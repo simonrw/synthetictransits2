@@ -329,7 +329,7 @@ string AlterObjectName(const string &OriginalName)
     /* Allow up to 10 million objects to be created */
     if (ResultingString.size() > 26)
     {
-        throw runtime_error("Too many objects in file (>1000000)");
+        throw runtime_error("Too many objects in file (>10000000)");
     }
     
     /* Increment the counter */
