@@ -298,6 +298,10 @@ stringlist split(const string &s, char delim)
     return split(s, delim, elems);
 }
 
+/** Takes an object name and creates a new one
+
+This function alters the object name to be unique in the 
+catalogue list. */
 string AlterObjectName(const string &OriginalName)
 {
     /* The name MUST be unique as Orion uses a dictionary to see
