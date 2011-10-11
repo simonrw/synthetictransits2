@@ -3,8 +3,8 @@ BuildDirs=/home/astro/phrfbf/work/WASPSelectionEffects/SyntheticTransits/build
 CMakeDir=/usr/share/cmake/Modules
 Current CMake Binary=file:///usr/bin/cmake
 CurrentBuildDir=file:///home/astro/phrfbf/work/WASPSelectionEffects/SyntheticTransits/build
-CurrentBuildType=Debug
-CurrentInstallDir=
+CurrentBuildType=Release
+CurrentInstallDir=file:///usr/local
 ProjectRootRelative=./
 
 [Launch]
