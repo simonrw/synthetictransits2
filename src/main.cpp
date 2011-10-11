@@ -311,8 +311,6 @@ string AlterObjectName(const string &OriginalName)
     /* Counter variable to ensure uniqueness */
     static unsigned long counter;
     
-    /* Increment the counter */
-    counter++;
     
     /* Split the string at the J character */
     stringlist parts = split(OriginalName, 'J');
@@ -333,6 +331,10 @@ string AlterObjectName(const string &OriginalName)
     {
         throw runtime_error("Too many objects in file (>1000000)");
     }
+    
+    /* Increment the counter */
+    counter++;
+
 
 
     return ResultingString;
