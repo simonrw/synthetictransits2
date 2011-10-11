@@ -298,9 +298,20 @@ stringlist split(const string &s, char delim)
     return split(s, delim, elems);
 }
 
+/** Takes an object name and creates a new one
+
+This function alters the object name to be unique in the 
+catalogue list. */
 string AlterObjectName(const string &OriginalName)
 {
-
+    /* The name MUST be unique as Orion uses a dictionary to see
+    if the object already exists. Therefore a new naming scheme must
+	be created.  */
+    
+    /* Counter variable to ensure uniqueness */
+    static unsigned long counter;
+    
+    
     /* Split the string at the J character */
     stringlist parts = split(OriginalName, 'J');
 
@@ -311,11 +322,22 @@ string AlterObjectName(const string &OriginalName)
     }
 
     stringstream NewName;
-    NewName << "1SYNTH J" << parts[1];
+    NewName.flags(ios::left);
+    NewName << setw(7) << counter << "J" << parts[1];
+    string ResultingString = NewName.str();
+
+    /* Allow up to 10 million objects to be created */
+    if (ResultingString.size() > 26)
+    {
+        throw runtime_error("Too many objects in file (>10000000)");
+    }
+    
+    /* Increment the counter */
+    counter++;
 
 
 
-    return NewName.str();
+    return ResultingString;
 }
 
 template <typename T>

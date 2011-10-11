@@ -1,0 +1,29 @@
+[CMake]
+BuildDirs=/home/astro/phrfbf/work/WASPSelectionEffects/SyntheticTransits/build
+CMakeDir=/usr/share/cmake/Modules
+Current CMake Binary=file:///usr/bin/cmake
+CurrentBuildDir=file:///home/astro/phrfbf/work/WASPSelectionEffects/SyntheticTransits/build
+CurrentBuildType=Release
+CurrentInstallDir=file:///usr/local
+ProjectRootRelative=./
+
+[Launch]
+Launch Configurations=Launch Configuration 0
+
+[Launch][Launch Configuration 0]
+Configured Launch Modes=execute
+Configured Launchers=nativeAppLauncher
+Name=Run
+Type=Native Application
+
+[Launch][Launch Configuration 0][Data]
+Arguments=-i /tmp/SyntheticLightcurves2/data.fits -o /tmp/SyntheticLightcurves2/synthout.fits -c /tmp/SyntheticLightcurves2/Candidates.db
+Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
+Dependency Action=Nothing
+EnvironmentGroup=default
+Project Target=SyntheticTransits,SyntheticLightcurves2
+Working Directory=file:///tmp/SyntheticLightcurves2
+isExecutable=false
+
+[MakeBuilder]
+Number Of Jobs=1
