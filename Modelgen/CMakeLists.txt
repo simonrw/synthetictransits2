@@ -4,3 +4,11 @@ project(${TARGET})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
+include_directories(
+    ${${TARGET}_SOURCE_DIR}/include
+    )
+
+add_library(${TARGET}
+    ${${TARGET}_SOURCE_DIR}/src/GenerateModel.cpp
+    )
+
