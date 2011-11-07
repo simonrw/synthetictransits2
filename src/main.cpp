@@ -464,15 +464,20 @@ int main(int argc, char *argv[])
         /* check the key exists */
         if (infile.status() == KEY_NO_EXIST)
         {
-            throw runtime_error("Project key not found, please set this");
+            cout << "Project unspecified, defaulting to WASP" << endl;
+            Config.isWASP = true;
+            infile.status() = 0;
+        }
+        else
+        {
+            /* Create string object for easy comparisons */
+            string Project(Project_cstr);
+
+            cout << Project << " project found" << endl;
+
+            Config.isWASP = (Project == "WASP") ? true : false;
         }
         
-        /* Create string object for easy comparisons */
-        string Project(Project_cstr);
-
-        cout << Project << " project found" << endl;
-
-        Config.isWASP = (Project == "WASP") ? true : false;
         Config.DatabaseFilename = candidates_arg.getValue();
         Config.SourceFilename = infile_arg.getValue();
         Config.OutputFilename = output_arg.getValue();
