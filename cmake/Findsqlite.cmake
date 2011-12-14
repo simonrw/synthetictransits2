@@ -4,11 +4,26 @@ FIND_PATH(SQLITE_INCLUDE_DIR sqlite3.h
     $ENV{HOME}/build/include
     )
 
-FIND_LIBRARY(SQLITE_LIBRARIES NAMES sqlite3 PATHS
+FIND_LIBRARY(SQLITE3_LIBRARIES NAMES sqlite3 PATHS
     $ENV{HOME}/build/lib
     /opt/local/lib
-    /usr/lib64
+    NO_DEFAULT_PATH
     )
+
+find_library(SQLITEOLD_LIBRARIES NAMES sqlite PATHS
+    $ENV{HOME}/build/lib
+    /opt/local/lib
+    NO_DEFAULT_PATH
+    )
+
+
+FIND_LIBRARY(DLLIBRARY NAMES dl)
+
+if (SQLITE3_LIBRARIES)
+    set(SQLITE_LIBRARIES ${DLLIBRARY} ${SQLITE3_LIBRARIES})
+else()
+    set(SQLITE_LIBRARIES ${DLLIBRARY} ${SQLITEOLD_LIBRARIES})
+endif()
 
 
 
