@@ -45,3 +45,5 @@ target_link_libraries(
 #    ${QT_LIBRARIES}
     )
 
+install(TARGETS ${TARGET} DESTINATION bin)
+set_property(TARGET ${TARGET} PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
