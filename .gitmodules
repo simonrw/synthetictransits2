@@ -1,9 +1,9 @@
-[submodule "rgwtimer"]
-	path = rgwtimer
-	url = callahan:gitrepos/rgwtimer.git
 [submodule "FitsObject"]
 	path = FitsObject
 	url = git@gitorious.org:generalcode/fitsobject.git
 [submodule "Modelgen"]
 	path = Modelgen
 	url = git@github.com:mindriot101/ModelGeneration.git
+[submodule "rgwtimer"]
+	path = rgwtimer
+	url = git@bitbucket.org:srwalker101/rgwtimer.git
