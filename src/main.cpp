@@ -26,14 +26,12 @@ using namespace sqlitepp;
 
 typedef vector<string> stringlist;
 
-enum
-{
+enum {
     add=101,
     sub
 };
 
-struct ConfigContainer
-{
+struct ConfigContainer {
     bool isWASP;
     string DatabaseFilename;
     string SourceFilename;
@@ -45,35 +43,26 @@ T square(T val) { return val * val; }
 
 const double jd_ref = 2453005.5;
 
-double wd2jd(double wd)
-{
+double wd2jd(double wd) {
     return (wd / secondsInDay) + jd_ref;
 }
 
-double jd2wd(double jd)
-{
+double jd2wd(double jd) {
     return (jd - jd_ref) * secondsInDay;
 }
 
 
-class ArithMeth
-{
+class ArithMeth {
     
     int m_type;
     
 public:
-    ArithMeth(const string &type)
-    {
-        if (type == "+")
-        {
+    ArithMeth(const string &type) {
+        if (type == "+") {
             this->m_type = add;
-        }
-        else if (type == "-")
-        {
+        } else if (type == "-") {
             this->m_type = sub;
-        }
-        else
-        {
+        } else {
             throw runtime_error("Unknown method specified (must be + or -)");
         }
     }
@@ -81,15 +70,13 @@ public:
     int type() const { return this->m_type; }
 };
 
-double WidthFromParams(const Model &m)
-{
+double WidthFromParams(const Model &m) {
     /* Returns the width of the full transit based on some lc parameters
      *
      * \frac{P}{\pi} \asin{\sqrt{(\frac{R_P + R_S}{a})^2 - \cos^2 i}}
      */
     const double Norm = (m.period * secondsInDay) / M_PI;
-    if (m.a == 0)
-    {
+    if (m.a == 0) {
         /* Something hasn't updated the separation */
         return 0;
     }
@@ -99,15 +86,13 @@ double WidthFromParams(const Model &m)
     const double InsideSqrt = FirstTerm - SecondTerm;
     
     /* Check that InsideSqrt is not <= 0 */
-    if (InsideSqrt <= 0.0)
-    {
+    if (InsideSqrt <= 0.0) {
         return 0.0;
     }
     
     const double SqrtInsideSqrt = sqrt(InsideSqrt);
     
-    if ((SqrtInsideSqrt < -1.0) || (SqrtInsideSqrt > 1.0))
-    {
+    if ((SqrtInsideSqrt < -1.0) || (SqrtInsideSqrt > 1.0)) {
         return 0;
     }
     
@@ -118,42 +103,38 @@ double WidthFromParams(const Model &m)
 }
 
 template <typename T>
-T WeightedMedian(const vector<T> &data, const double siglevel, long &npts)
-{
+T WeightedMedian(const vector<T> &data, const double siglevel, long &npts) {
+
     vector<T> buffer;
     const size_t N = data.size();
     
     /* First calculate the mean */
     double av = 0;
     int ValidPoints = 0;
-    for (size_t i=0; i<N; ++i)
-    {
-        if (!isnan(data.at(i)))
-        {
+    for (size_t i=0; i<N; ++i) {
+        if (!isnan(data.at(i))) {
+
             av += data.at(i);
             ValidPoints++;
+
         }
     }
     av /= (double)ValidPoints;
     npts = ValidPoints;
     
     /* Put in a check for if the av is 0 */
-    if (av == 0)
-    {
+    if (av == 0) {
         throw runtime_error("Cannot calculate average - all points are 0");
     }
 
-    if (isnan(av))
-    {
+    if (isnan(av)) {
         throw runtime_error("Cannot calculate average - average is NaN");
     }
 
     /* now the sigma */
     double sd = 0;
-    for (size_t i=0; i<N; ++i)
-    {
-        if (!isnan(data.at(i)))
-        {
+    for (size_t i=0; i<N; ++i) {
+        if (!isnan(data.at(i))) {
             sd += (data.at(i) - av)*(data.at(i) - av);
         }
     }
@@ -163,10 +144,8 @@ T WeightedMedian(const vector<T> &data, const double siglevel, long &npts)
     const double upperlim = av + siglevel * sd;
     const double lowerlim = av - siglevel * sd;
 
-    for (int i=0; i<N; ++i)
-    {
-        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim) && !isnan(data.at(i)))
-        {
+    for (int i=0; i<N; ++i) {
+        if ((data.at(i) < upperlim) && (data.at(i) > lowerlim) && !isnan(data.at(i))) {
             buffer.push_back(data.at(i));
         }
     }
@@ -184,28 +163,23 @@ T WeightedMedian(const vector<T> &data, const double siglevel, long &npts)
 
 
 
-struct FalseColumnNumbers
-{
+struct FalseColumnNumbers {
     int skipdet, period, width, depth, epoch,
     rp, rs, a, i;
 };
 
 
-long indexOf(const stringlist &stringlist, const string &comp)
-{
-    for (size_t i=0; i<stringlist.size(); ++i)
-    {
-        if (stringlist.at(i) == comp)
-        {
+long indexOf(const stringlist &stringlist, const string &comp) {
+
+    for (size_t i=0; i<stringlist.size(); ++i) {
+
+        if (stringlist.at(i) == comp) {
             return i;
-        }
-        else
-        {
+        } else {
             string nameWithoutWhitespace(comp);
             nameWithoutWhitespace.erase(remove_if(nameWithoutWhitespace.begin(), nameWithoutWhitespace.end(), ::isspace), nameWithoutWhitespace.end());
 
-            if (stringlist.at(i) == nameWithoutWhitespace)
-            {
+            if (stringlist.at(i) == nameWithoutWhitespace) {
                 return i;
             }
         }
@@ -216,8 +190,7 @@ long indexOf(const stringlist &stringlist, const string &comp)
     throw runtime_error("Cannot find object");
 }
 
-pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config)
-{
+pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
     /* returns a pair of the mean flux and the number 
      of valid points in the lightcurve */
     f.moveHDU("HJD");
@@ -229,10 +202,8 @@ pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int 
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
 
     /* if the Config.isWASP parameter is set then convert the array to jd */
-    if (Config.isWASP)
-    {
-        for (int i=0; i<length; ++i)
-        {
+    if (Config.isWASP) {
+        for (int i=0; i<length; ++i) {
             jd[i] = wd2jd(jd[i]);
         }
     }
@@ -250,8 +221,7 @@ pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int 
     
     vector<double> TransitAdded(length);
     double result = 0;
-    for (int i=0; i<length; ++i)
-    {
+    for (int i=0; i<length; ++i) {
         double fluxval = OriginalFlux.at(i);
         fluxval /= WeightedMed;
         
@@ -259,12 +229,10 @@ pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int 
 
         /* Perform the arithmetic */
         
-        if (arithtype.type() == add)
-        {
+        if (arithtype.type() == add) {
             result = WeightedMed * (fluxval + modelval - 1.0);
         }
-        else if (arithtype.type() == sub)
-        {
+        else if (arithtype.type() == sub) {
             result = WeightedMed * (fluxval - modelval + 1.0);
         }
         TransitAdded[i] = result;
@@ -281,8 +249,7 @@ pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int 
 
 }
 
-stringlist &split(const string &s, char delim, stringlist &elems)
-{
+stringlist &split(const string &s, char delim, stringlist &elems) {
     stringstream ss(s);
     string item;
     while(getline(ss, item, delim)) {
@@ -292,8 +259,7 @@ stringlist &split(const string &s, char delim, stringlist &elems)
 }
 
 
-stringlist split(const string &s, char delim)
-{
+stringlist split(const string &s, char delim) {
     stringlist elems;
     return split(s, delim, elems);
 }
@@ -302,8 +268,7 @@ stringlist split(const string &s, char delim)
 
 This function alters the object name to be unique in the 
 catalogue list. */
-string AlterObjectName(const string &OriginalName)
-{
+string AlterObjectName(const string &OriginalName) {
     /* The name MUST be unique as Orion uses a dictionary to see
     if the object already exists. Therefore a new naming scheme must
 	be created.  */
@@ -316,8 +281,7 @@ string AlterObjectName(const string &OriginalName)
     stringlist parts = split(OriginalName, 'J');
 
     /* check the length for validity */
-    if (parts.size() != 2)
-    {
+    if (parts.size() != 2) {
         throw runtime_error("Unknown object name encountered");
     }
 
@@ -327,8 +291,7 @@ string AlterObjectName(const string &OriginalName)
     string ResultingString = NewName.str();
 
     /* Allow up to 10 million objects to be created */
-    if (ResultingString.size() > 26)
-    {
+    if (ResultingString.size() > 26) {
         throw runtime_error("Too many objects in file (>10000000)");
     }
     
@@ -341,16 +304,14 @@ string AlterObjectName(const string &OriginalName)
 }
 
 template <typename T>
-void OverPrint(const T &val)
-{
+void OverPrint(const T &val) {
     cout << "\r" << val;
     cout.flush();
 
 }
 
 /* Function to copy a row from a table across to a new position in the same table */
-void CopyTableRow(Fits &infile, const long origindex, const long newindex)
-{
+void CopyTableRow(Fits &infile, const long origindex, const long newindex) {
     /* Current hdu must be on a binary table */
     const long nrows = infile.nrows();
 
@@ -359,8 +320,7 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
     fits_get_num_cols(*infile.fptr(), &ncols, &infile.status());
     infile.check();
 
-    for (int i=1; i<=ncols; ++i)
-    {
+    for (int i=1; i<=ncols; ++i) {
         /* Check for data type */
         int typecode;
         
@@ -372,18 +332,15 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
         fits_get_coltype(*infile.fptr(), i, &typecode, &repeat, &width, &infile.status());
         infile.check();
 
-        switch (typecode)
-        {
-            case TDOUBLE:
-                {
+        switch (typecode) {
+            case TDOUBLE: {
                     double tmp;
                     fits_read_col(*infile.fptr(), TDOUBLE, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
                     fits_write_col(*infile.fptr(), TDOUBLE, i, newindex, 1, 1, &tmp, &infile.status());
                     infile.check();
                     break;
                 }
-            case TSTRING:
-                {
+            case TSTRING: {
                     char buf[repeat+1], *bufptr = (char*)buf;
 
                     fits_read_col_str(*infile.fptr(), i, origindex, 1, 1, "", &bufptr, NULL, &infile.status());
@@ -391,32 +348,28 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
                     infile.check();
                     break;
                 }
-            case TLONG:
-                {
+            case TLONG: {
                     long tmp;
                     fits_read_col(*infile.fptr(), TLONG, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
                     fits_write_col(*infile.fptr(), TLONG, i, newindex, 1, 1, &tmp, &infile.status());
                     infile.check();
                     break;
                 }
-            case TINT:
-                {
+            case TINT: {
                     int tmp;
                     fits_read_col(*infile.fptr(), TINT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
                     fits_write_col(*infile.fptr(), TINT, i, newindex, 1, 1, &tmp, &infile.status());
                     infile.check();
                     break;
                 }
-            case TFLOAT:
-                {
+            case TFLOAT: {
                     float tmp;
                     fits_read_col(*infile.fptr(), TFLOAT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
                     fits_write_col(*infile.fptr(), TFLOAT, i, newindex, 1, 1, &tmp, &infile.status());
                     infile.check();
                     break;
                 }
-            case TSHORT:
-                {
+            case TSHORT: {
                     short int tmp;
                     fits_read_col(*infile.fptr(), TSHORT, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
                     fits_write_col(*infile.fptr(), TSHORT, i, newindex, 1, 1, &tmp, &infile.status());
@@ -433,10 +386,8 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex)
 }
 
 
-int main(int argc, char *argv[])
-{
-    try
-    {
+int main(int argc, char *argv[]) {
+    try {
         TCLAP::CmdLine cmd("");
         TCLAP::ValueArg<string> infile_arg("i", "infile", "Input fits file", true, "", "Fits file", cmd);
         TCLAP::ValueArg<string> candidates_arg("c", "candidates", "Input candidates file", true, "", "SQLite3 database", cmd);
@@ -462,14 +413,11 @@ int main(int argc, char *argv[])
         fits_read_key(*infile.fptr(), TSTRING, "PROJECT", &Project_cstr, 0, &infile.status());
 
         /* check the key exists */
-        if (infile.status() == KEY_NO_EXIST)
-        {
+        if (infile.status() == KEY_NO_EXIST) {
             cout << "Project unspecified, defaulting to WASP" << endl;
             Config.isWASP = true;
             infile.status() = 0;
-        }
-        else
-        {
+        } else {
             /* Create string object for easy comparisons */
             string Project(Project_cstr);
 
@@ -482,8 +430,7 @@ int main(int argc, char *argv[])
         Config.SourceFilename = infile_arg.getValue();
         Config.OutputFilename = output_arg.getValue();
 
-        if (Config.isWASP)
-        {
+        if (Config.isWASP) {
             cout << "--- Converting times to WASP data" << endl;
         }
 
@@ -516,16 +463,14 @@ int main(int argc, char *argv[])
         /* get the required number of new objects */
         int nextra = 0;
         st << "select count(*) from addmodels", into(nextra);
-        if (!st.exec())
-        {
+        if (!st.exec()) {
             throw runtime_error("No input models found");
         }
 
         cout << "Inserting " << nextra << " extra models" << endl;
 
 
-        for (int hdu=2; hdu<=nhdus; ++hdu)
-        {
+        for (int hdu=2; hdu<=nhdus; ++hdu) {
             int status = 0;
             infile.moveHDU(hdu);
 
@@ -540,8 +485,7 @@ int main(int argc, char *argv[])
             outfile.check();
 
             /* If an image hdu is found then just resize it */
-            if (hdutype == IMAGE_HDU)
-            {
+            if (hdutype == IMAGE_HDU) {
                 /* Get the current dimensions */
                 long naxes[2];
                 fits_get_img_size(*outfile.fptr(), 2, naxes, &outfile.status());
@@ -559,17 +503,14 @@ int main(int argc, char *argv[])
                 outfile.check();
 
                 cout << " -> " << newnaxes[0] << "x" << newnaxes[1] << " pix";
-            }
-            else
-            {
+            } else {
                 /* If the catalogue extension is found then add extra rows */
                 const string hduname = outfile.hduname();
                 long nrows = outfile.nrows();
 
                 cout << " - " << nrows << " rows";
 
-                if (hduname == "CATALOGUE")
-                {
+                if (hduname == "CATALOGUE") {
                     /* Need to add extra columns */
                     int ncols = 0;
                     fits_get_num_cols(*outfile.fptr(), &ncols, &outfile.status());
@@ -655,8 +596,7 @@ int main(int argc, char *argv[])
         for (int i=0; i<nrows; ++i) cstrnames[i] = new char[dispwidth+1];
         fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
 
-        for (int i=0; i<nrows; ++i)
-        {
+        for (int i=0; i<nrows; ++i) {
             string CurrentName = cstrnames[i];
             /* Remove all whitespace */
             CurrentName.erase(remove_if(CurrentName.begin(), CurrentName.end(), ::isspace), CurrentName.end());
@@ -673,8 +613,7 @@ int main(int argc, char *argv[])
 
         long counter = 0;
         cout << "Generating models" << endl;
-        while (st.exec())
-        {
+        while (st.exec()) {
             /* Location to write the data to */
             const long OutputIndex = nrows + counter;
             
@@ -725,8 +664,7 @@ int main(int argc, char *argv[])
             
             /* Now get all of the data from Index: OutputIndex*naxes[0] */
 
-            if (Current.submodel_id != NullSubIndex)
-            {
+            if (Current.submodel_id != NullSubIndex) {
                 statement subst(conn);
                 Model SubModel;
                 
@@ -736,8 +674,7 @@ int main(int argc, char *argv[])
                 into(SubModel.rp), into(SubModel.mstar), into(SubModel.c1), into(SubModel.c2), into(SubModel.c3), 
                 into(SubModel.c4), into(SubModel.teff);
                 
-                if (!subst.exec())
-                {
+                if (!subst.exec()) {
                     throw runtime_error("Cannot find subtraction object");
                 }
                 
@@ -790,8 +727,7 @@ int main(int argc, char *argv[])
             fits_read_col(*outfile.fptr(), TINT, fcn.skipdet, SourceIndex+1, 1, 1, NULL, &OldSkipdetFlag, NULL, &outfile.status());
 
             /* Only update if it's set to AlterDetrending::include */
-            if (OldSkipdetFlag == AlterDetrending::include)
-            {
+            if (OldSkipdetFlag == AlterDetrending::include) {
                 /* New value of the flag */
                 SkipdetFlag = AlterDetrending::skiptfa;
                 fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, SourceIndex + 1, 1, 1, &SkipdetFlag, &outfile.status());
@@ -833,17 +769,11 @@ int main(int argc, char *argv[])
 
         ts.stop("all");
         return 0;
-    }
-    catch (TCLAP::ArgException &e)
-    {
+    } catch (TCLAP::ArgException &e) {
         cerr << "error: " << e.error() << " for arg " << e.argId() << endl;
-    }
-    catch (std::runtime_error &e)
-    {
+    } catch (std::runtime_error &e) {
         cerr << "Runtime error: " << e.what() << endl;
-    }
-    catch (std::exception &e)
-    {
+    } catch (std::exception &e) {
         cerr << "std::exception: " << e.what() << endl;
     }
 
