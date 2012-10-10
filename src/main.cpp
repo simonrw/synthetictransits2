@@ -53,9 +53,9 @@ double jd2wd(double jd) {
 
 
 class ArithMeth {
-    
+
     int m_type;
-    
+
 public:
     ArithMeth(const string &type) {
         if (type == "+") {
@@ -66,7 +66,7 @@ public:
             throw runtime_error("Unknown method specified (must be + or -)");
         }
     }
-    
+
     int type() const { return this->m_type; }
 };
 
@@ -80,26 +80,26 @@ double WidthFromParams(const Model &m) {
         /* Something hasn't updated the separation */
         return 0;
     }
-    
+
     const double FirstTerm = square(((m.rp * rJup) + (m.rs * rSun)) / (m.a * AU));
     const double SecondTerm = square(cos(m.i * radiansInDegree));
     const double InsideSqrt = FirstTerm - SecondTerm;
-    
+
     /* Check that InsideSqrt is not <= 0 */
     if (InsideSqrt <= 0.0) {
         return 0.0;
     }
-    
+
     const double SqrtInsideSqrt = sqrt(InsideSqrt);
-    
+
     if ((SqrtInsideSqrt < -1.0) || (SqrtInsideSqrt > 1.0)) {
         return 0;
     }
-    
-    
-    
+
+
+
     return Norm * asin(SqrtInsideSqrt);
-    
+
 }
 
 template <typename T>
@@ -107,7 +107,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel, long &npts) {
 
     vector<T> buffer;
     const size_t N = data.size();
-    
+
     /* First calculate the mean */
     double av = 0;
     int ValidPoints = 0;
@@ -121,7 +121,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel, long &npts) {
     }
     av /= (double)ValidPoints;
     npts = ValidPoints;
-    
+
     /* Put in a check for if the av is 0 */
     if (av == 0) {
         throw runtime_error("Cannot calculate average - all points are 0");
@@ -191,13 +191,13 @@ long indexOf(const stringlist &stringlist, const string &comp) {
 }
 
 pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
-    /* returns a pair of the mean flux and the number 
+    /* returns a pair of the mean flux and the number
      of valid points in the lightcurve */
     f.moveHDU("HJD");
     pair<double, long> OutputData;
 
     vector<double> jd(length);
-    
+
     /* Fetch the jd data */
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
 
@@ -207,28 +207,28 @@ pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int 
             jd[i] = wd2jd(jd[i]);
         }
     }
-    
+
     /* Now get the addition model */
     vector<double> ModelFlux = GenerateSynthetic(jd, m);
-    
+
     f.moveHDU("FLUX");
     vector<double> OriginalFlux(length);
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &OriginalFlux[0], 0, &f.status());
-    
+
     /* Normalise to the weighted median flux level */
     double WeightedMed = WeightedMedian(OriginalFlux, 2.5, OutputData.second);
     OutputData.first = WeightedMed;
-    
+
     vector<double> TransitAdded(length);
     double result = 0;
     for (int i=0; i<length; ++i) {
         double fluxval = OriginalFlux.at(i);
         fluxval /= WeightedMed;
-        
+
         double modelval = ModelFlux.at(i);
 
         /* Perform the arithmetic */
-        
+
         if (arithtype.type() == add) {
             result = WeightedMed * (fluxval + modelval - 1.0);
         }
@@ -237,13 +237,13 @@ pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int 
         }
         TransitAdded[i] = result;
     }
-    
-    
-    
-    
+
+
+
+
     fits_write_img(*f.fptr(), TDOUBLE, startindex, length, &TransitAdded[0], &f.status());
     f.check();
-    
+
     return OutputData;
 
 
@@ -266,17 +266,17 @@ stringlist split(const string &s, char delim) {
 
 /** Takes an object name and creates a new one
 
-This function alters the object name to be unique in the 
+This function alters the object name to be unique in the
 catalogue list. */
 string AlterObjectName(const string &OriginalName) {
     /* The name MUST be unique as Orion uses a dictionary to see
     if the object already exists. Therefore a new naming scheme must
-	be created.  */
-    
+    be created.  */
+
     /* Counter variable to ensure uniqueness */
     static unsigned long counter;
-    
-    
+
+
     /* Split the string at the J character */
     stringlist parts = split(OriginalName, 'J');
 
@@ -294,7 +294,7 @@ string AlterObjectName(const string &OriginalName) {
     if (ResultingString.size() > 26) {
         throw runtime_error("Too many objects in file (>10000000)");
     }
-    
+
     /* Increment the counter */
     counter++;
 
@@ -323,9 +323,9 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex) {
     for (int i=1; i<=ncols; ++i) {
         /* Check for data type */
         int typecode;
-        
+
         /* Get the repeat count for each cell */
-        long repeat; 
+        long repeat;
 
         /* Get the data width (unused) */
         long width;
@@ -404,8 +404,8 @@ int main(int argc, char *argv[]) {
         Fits infile(infile_arg.getValue());
 
         /* Make sure the project has the 'project' header key,
-         * and if it's wasp make sure all jds are converted 
-         * to wasp dates 
+         * and if it's wasp make sure all jds are converted
+         * to wasp dates
          */
         infile.moveHDU(1);
 
@@ -425,7 +425,7 @@ int main(int argc, char *argv[]) {
 
             Config.isWASP = (Project == "WASP") ? true : false;
         }
-        
+
         Config.DatabaseFilename = candidates_arg.getValue();
         Config.SourceFilename = infile_arg.getValue();
         Config.OutputFilename = output_arg.getValue();
@@ -436,7 +436,7 @@ int main(int argc, char *argv[]) {
 
 
         NewFits outfile("!" + output_arg.getValue());
-        
+
         /* Copy the primary hdu across */
         int status = 0;
         fits_copy_hdu(*infile.fptr(), *outfile.fptr(), 0, &status);
@@ -446,7 +446,7 @@ int main(int argc, char *argv[]) {
         bool transinj_val = true;
         fits_write_key(*outfile.fptr(), TLOGICAL, "TRANSINJ", &transinj_val, "Contains false transits", &outfile.status());
         outfile.check();
-        
+
 
         /* Start by getting file information from the input */
         int nhdus = 0;
@@ -557,7 +557,7 @@ int main(int argc, char *argv[]) {
         ts.stop("copy");
 
         /* File copy finished */
-        
+
         /* Prefetch the column numbers for later use */
         outfile.moveHDU("CATALOGUE");
         FalseColumnNumbers fcn;
@@ -606,9 +606,9 @@ int main(int argc, char *argv[]) {
 
         /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
         st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
-        " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id), 
+        " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id),
         into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
-        into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3), 
+        into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3),
         into(Current.c4), into(Current.teff);
 
         long counter = 0;
@@ -616,15 +616,15 @@ int main(int argc, char *argv[]) {
         while (st.exec()) {
             /* Location to write the data to */
             const long OutputIndex = nrows + counter;
-            
+
             /* Need to append 1 for the catalogue information as the catalogue
              is 1 indexed */
             const long CatalogueIndex = OutputIndex + 1;
-            
+
             /* Get the index of the original lightcurve */
             long SourceIndex = indexOf(ObjectNames, Current.name);
 
-            
+
             /* Copy the original data to the new location */
             outfile.moveHDU("HJD");
             long naxes[2];
@@ -632,11 +632,11 @@ int main(int argc, char *argv[]) {
             outfile.check();
 
 
-            
+
 
             /* And copy the other data parts two */
             vector<double> buffer(naxes[0]);
-            
+
             /* Load the jd data separately */
             vector<double> jd(naxes[0]);
             outfile.moveHDU("HJD");
@@ -661,31 +661,31 @@ int main(int argc, char *argv[]) {
             fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex*naxes[0])+1, naxes[0], 0, &buffer[0], 0, &outfile.status());
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex*naxes[0], naxes[0], &buffer[0], &outfile.status());
             outfile.check();
-            
+
             /* Now get all of the data from Index: OutputIndex*naxes[0] */
 
             if (Current.submodel_id != NullSubIndex) {
                 statement subst(conn);
                 Model SubModel;
-                
+
                 subst << "select id, name, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
-                " from submodels where id = " << Current.submodel_id, into(SubModel.id), into(SubModel.name),  
+                " from submodels where id = " << Current.submodel_id, into(SubModel.id), into(SubModel.name),
                 into(SubModel.period), into(SubModel.epoch), into(SubModel.a), into(SubModel.i), into(SubModel.rs),
-                into(SubModel.rp), into(SubModel.mstar), into(SubModel.c1), into(SubModel.c2), into(SubModel.c3), 
+                into(SubModel.rp), into(SubModel.mstar), into(SubModel.c1), into(SubModel.c2), into(SubModel.c3),
                 into(SubModel.c4), into(SubModel.teff);
-                
+
                 if (!subst.exec()) {
                     throw runtime_error("Cannot find subtraction object");
                 }
-                
+
                 /* SubModel now contains the subtraction model */
                 AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], SubModel, ArithMeth("-"), Config);
             }
-            
+
             /* Add a transit model to the data */
             pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, OutputIndex*naxes[0], naxes[0], Current, ArithMeth("+"), Config);
 
-            
+
             /* And update the catalogue false transits information */
             outfile.moveHDU("CATALOGUE");
 
@@ -695,29 +695,29 @@ int main(int argc, char *argv[]) {
             /* Need to do some conversion but have to create a temp variable for this */
             double tmp = Current.period * secondsInDay;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.period, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            
+
             tmp = jd2wd(Current.epoch);
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.epoch, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            
+
             tmp = Current.rp * rJup;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rp, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            
+
             tmp = Current.rs * rSun;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.rs, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            
+
             tmp = Current.a * AU;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.a, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            
+
             tmp = Current.i * radiansInDegree;
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.i, CatalogueIndex, 1, 1, &tmp, &outfile.status());
-            
+
             double TransitDepth = square((Current.rp * rJup) / (Current.rs * rSun));
             double TransitWidth = WidthFromParams(Current);
-            
+
             /* These next two require calculation */
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.width, CatalogueIndex, 1, 1, &TransitWidth, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, fcn.depth, CatalogueIndex, 1, 1, &TransitDepth, &outfile.status());
-            
+
             /* Now the skipdet flag */
             int SkipdetFlag = AlterDetrending::skipboth;
             fits_write_col(*outfile.fptr(), TINT, fcn.skipdet, CatalogueIndex, 1, 1, &SkipdetFlag, &outfile.status());
@@ -741,23 +741,23 @@ int main(int argc, char *argv[]) {
             strcpy(cstr, NewName.c_str());
             fits_write_col_str(*outfile.fptr(), obj_id_colno, CatalogueIndex, 1, 1, &cstr, &outfile.status());
             delete[] cstr;
-            
+
             /* Update the flux mean and npts columns */
             int npts_col = outfile.columnNumber("NPTS");
             int flux_mean_col = outfile.columnNumber("FLUX_MEAN");
             fits_write_col(*outfile.fptr(), TLONG, npts_col, CatalogueIndex, 1, 1, &LightcurveInfo.second, &outfile.status());
             fits_write_col(*outfile.fptr(), TDOUBLE, flux_mean_col, CatalogueIndex, 1, 1, &LightcurveInfo.first, &outfile.status());
-            
+
             /* Now validate */
             outfile.check();
 
 
 
-            
+
             stringstream ss;
             ss << counter + 1 << "/" << nextra;
             OverPrint(ss.str());
-            
+
             ++counter;
         }
 
