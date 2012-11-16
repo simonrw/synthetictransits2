@@ -423,7 +423,7 @@ int main(int argc, char *argv[]) {
         /* Set up the config variable */
         ConfigContainer Config;
 
-        Fits infile(infile_arg.getValue());
+        ReadOnlyFits infile(infile_arg.getValue());
 
         /* Make sure the project has the 'project' header key,
          * and if it's wasp make sure all jds are converted
