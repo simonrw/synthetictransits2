@@ -2,7 +2,6 @@
 #include <cstring>
 #include <cassert>
 #include <stdexcept>
-#include <sqlitepp/sqlitepp.hpp>
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
 #include <sstream>
@@ -10,6 +9,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
+#include <sqlite3.h>
 
 /* Local includes */
 #include "timer.h"
@@ -22,7 +22,6 @@
 
 
 using namespace std;
-using namespace sqlitepp;
 
 typedef vector<string> stringlist;
 
@@ -407,6 +406,97 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex) {
 
 }
 
+class FetchesParameters {
+    public:
+
+        FetchesParameters(const string &filename)
+            : filename(filename) {
+            sqlite3_open(filename.c_str(), &ppDb);
+        }
+
+        ~FetchesParameters() {
+            if (ppDb != NULL) {
+                sqlite3_close(ppDb);
+            }
+        }
+
+        long nmodels() {
+            const string sql = "SELECT count(*) FROM addmodels;";
+            sqlite3_stmt *stmt;
+            sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
+            int step_state = 0;
+            int nrows = 0;
+            while (step_state != SQLITE_DONE) {
+                switch (step_state) {
+                    case SQLITE_ROW:
+                        nrows = sqlite3_column_int(stmt, 0);
+                        break;
+                    case SQLITE_ERROR:
+                        fprintf(stderr, "Error\n");
+                        exit(1);
+                }
+                step_state = sqlite3_step(stmt);
+            }
+
+            return nrows;
+        }
+
+        Model model_from_statement(sqlite3_stmt *stmt) {
+            Model model;
+            int col = 0;
+            model.id = sqlite3_column_int(stmt, col++);
+
+            const unsigned char *model_name_cstr = sqlite3_column_text(stmt, col++);
+            string model_name(reinterpret_cast<const char*>(model_name_cstr));
+            model.name = model_name;
+
+            model.submodel_id = sqlite3_column_int(stmt, col++);
+            model.period = sqlite3_column_double(stmt, col++);
+            model.epoch = sqlite3_column_double(stmt, col++);
+            model.a =  sqlite3_column_double(stmt, col++);
+            model.i = sqlite3_column_double(stmt, col++);
+            model.rs = sqlite3_column_double(stmt, col++);
+            model.rp = sqlite3_column_double(stmt, col++);
+            model.mstar = sqlite3_column_double(stmt, col++);
+            model.c1 = sqlite3_column_double(stmt, col++);
+            model.c2 = sqlite3_column_double(stmt, col++);
+            model.c3 = sqlite3_column_double(stmt, col++);
+            model.c4 = sqlite3_column_double(stmt, col++);
+            model.teff = sqlite3_column_double(stmt, col++);
+
+            return model;
+        }
+
+        vector<Model> fetch_models() {
+            const string sql = "select id, name, submodel_id, period, epoch, a, "
+                "i, rs, rp, mstar, c1, c2, c3, c4, teff "
+                "from addmodels";
+            sqlite3_stmt *stmt;
+            sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
+            vector<Model> models;
+            int step_state = 0;
+            while (step_state != SQLITE_DONE) {
+                switch (step_state) {
+                    case SQLITE_ROW:
+                        models.push_back(model_from_statement(stmt));
+                        break;
+                    case SQLITE_ERROR:
+                        fprintf(stderr, "Error\n");
+                        exit(1);
+                }
+                step_state = sqlite3_step(stmt);
+            }
+
+            return models;
+        }
+
+        struct StopIteration : public runtime_error {};
+
+    private:
+        string filename;
+        sqlite3 *ppDb;
+
+};
 
 int main(int argc, char *argv[]) {
     try {
@@ -480,14 +570,12 @@ int main(int argc, char *argv[]) {
 
 
         /* Open the sqlite3 database here */
-        session conn(candidates_arg.getValue());
-        statement st(conn);
+        FetchesParameters param_fetcher(candidates_arg.getValue());
 
         /* get the required number of new objects */
-        int nextra = 0;
-        st << "select count(*) from addmodels", into(nextra);
+        int nextra = param_fetcher.nmodels();
 
-        if (!st.exec()) {
+        if (nextra == 0) {
             throw runtime_error("No input models found");
         }
 
@@ -601,7 +689,6 @@ int main(int argc, char *argv[]) {
 
 
         ts.start("model.iterate");
-        Model Current;
         const int NullSubIndex = -1;
 
 
@@ -633,17 +720,16 @@ int main(int argc, char *argv[]) {
             delete[] cstrnames[i];
         }
 
-        /* Now iterate through every row adding a new lightcurve, and subtracting if necassary  */
-        st << "select id, name, submodel_id, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
-           " from addmodels", into(Current.id), into(Current.name), into(Current.submodel_id),
-           into(Current.period), into(Current.epoch), into(Current.a), into(Current.i), into(Current.rs),
-           into(Current.rp), into(Current.mstar), into(Current.c1), into(Current.c2), into(Current.c3),
-           into(Current.c4), into(Current.teff);
-
         long counter = 0;
         cout << "Generating models" << endl;
 
-        while (st.exec()) {
+        vector<Model> models = param_fetcher.fetch_models();
+
+        for (vector<Model>::const_iterator itr = models.begin();
+                itr != models.end();
+                itr++) {
+            const Model Current = *itr;
+
             /* Location to write the data to */
             const long OutputIndex = nrows + counter;
 
@@ -691,26 +777,6 @@ int main(int argc, char *argv[]) {
             fits_read_img(*outfile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0], 0, &buffer[0], 0, &outfile.status());
             fits_write_img(*outfile.fptr(), TDOUBLE, OutputIndex * naxes[0], naxes[0], &buffer[0], &outfile.status());
             outfile.check();
-
-            /* Now get all of the data from Index: OutputIndex*naxes[0] */
-
-            if (Current.submodel_id != NullSubIndex) {
-                statement subst(conn);
-                Model SubModel;
-
-                subst << "select id, name, period, epoch, a, i, rs, rp, mstar, c1, c2, c3, c4, teff "
-                      " from submodels where id = " << Current.submodel_id, into(SubModel.id), into(SubModel.name),
-                      into(SubModel.period), into(SubModel.epoch), into(SubModel.a), into(SubModel.i), into(SubModel.rs),
-                      into(SubModel.rp), into(SubModel.mstar), into(SubModel.c1), into(SubModel.c2), into(SubModel.c3),
-                      into(SubModel.c4), into(SubModel.teff);
-
-                if (!subst.exec()) {
-                    throw runtime_error("Cannot find subtraction object");
-                }
-
-                /* SubModel now contains the subtraction model */
-                AlterLightcurveData(outfile, OutputIndex * naxes[0], naxes[0], SubModel, ArithMeth("-"), Config);
-            }
 
             /* Add a transit model to the data */
             pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, OutputIndex * naxes[0], naxes[0], Current, ArithMeth("+"), Config);
