@@ -3,8 +3,8 @@ CCSOURCES := $(wildcard src/*.C)
 OBJECTS := $(CPPSOURCES:.cpp=.o) $(CCSOURCES:.C=.o)
 RUN := bin/synthetic_transits
 COMMON := -Wno-write-strings
-CFLAGS := -Iinclude -Imodelgen/include -Irgwtimer/include
-LDFLAGS := -lcfitsio -lsqlite3
+CFLAGS := -I/usr/local/cfitsio/include -I/usr/local/tclap/include -Iinclude -Imodelgen/include -Irgwtimer/include
+LDFLAGS := -L/usr/local/cfitsio/lib -lcfitsio -lsqlite3
 
 all: $(RUN)
 
