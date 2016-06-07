@@ -4,7 +4,7 @@ OBJECTS := $(CPPSOURCES:.cpp=.o) $(CCSOURCES:.C=.o)
 RUN := bin/synthetic_transits
 COMMON := -Wno-write-strings
 CFLAGS := -Iinclude -Imodelgen/include -Irgwtimer/include
-LDFLAGS := -lcfitsio
+LDFLAGS := -lcfitsio -lsqlite3
 
 all: $(RUN)
 
