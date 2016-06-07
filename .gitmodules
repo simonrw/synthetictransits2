@@ -6,4 +6,4 @@
 	url = git@bitbucket.org:srwalker101/rgwtimer.git
 [submodule "FitsObject"]
 	path = FitsObject
-	url = https://github.com/mindriot101/fitsobject
+	url = git@github.com:mindriot101/fitsobject.git
