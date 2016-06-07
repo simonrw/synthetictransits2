@@ -3,3 +3,4 @@ makebuild
 build
 *~
 *.o
+bin
