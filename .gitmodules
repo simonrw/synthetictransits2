@@ -1,6 +1,6 @@
 [submodule "FitsObject"]
 	path = FitsObject
-	url = git@gitorious.org:generalcode/fitsobject.git
+	url = https://gitorious.org/generalcode/fitsobject.git
 [submodule "Modelgen"]
 	path = Modelgen
 	url = git@github.com:mindriot101/ModelGeneration.git
