@@ -2,3 +2,4 @@ data.fits
 makebuild
 build
 *~
+*.o
