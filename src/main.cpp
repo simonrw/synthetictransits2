@@ -438,6 +438,8 @@ class FetchesParameters {
                 step_state = sqlite3_step(stmt);
             }
 
+            sqlite3_finalize(stmt);
+
             return nrows;
         }
 
@@ -486,6 +488,8 @@ class FetchesParameters {
                 }
                 step_state = sqlite3_step(stmt);
             }
+
+            sqlite3_finalize(stmt);
 
             return models;
         }
