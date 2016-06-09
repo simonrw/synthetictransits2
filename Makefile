@@ -2,7 +2,7 @@ CPPSOURCES := $(wildcard src/*.cpp)
 CCSOURCES := $(wildcard src/*.C)
 OBJECTS := $(CPPSOURCES:.cpp=.o) $(CCSOURCES:.C=.o)
 RUN := bin/synthetic_transits
-COMMON := -Wno-write-strings -O0 -g -std=c++11
+COMMON := -Wno-write-strings -O2 -g -std=c++11
 CFLAGS := -I/usr/local/cfitsio/include -I/usr/local/tclap/include -Iinclude -Imodelgen/include -Irgwtimer/include
 LDFLAGS := -L/usr/local/cfitsio/lib -lcfitsio -lsqlite3
 
