@@ -317,7 +317,7 @@ string AlterObjectName(const string &OriginalName) {
      */
 
     char buf[6];
-    snprintf(buf, 6, "F%05d", counter);
+    snprintf(buf, 6, "F%05lu", counter);
     string ResultingString(buf);
 
 
@@ -582,7 +582,7 @@ stringlist extract_object_names(ReadOnlyFits &infile, long &nrows) {
 
 /* Copy from the documentation as ICC does not support this */
 template< class InputIt, class UnaryPredicate >
-bool any_of(InputIt first, InputIt last, UnaryPredicate p) {
+bool is_any_of(InputIt first, InputIt last, UnaryPredicate p) {
     return std::find_if(first, last, p) != last;
 }
 
@@ -590,7 +590,7 @@ bool any_of(InputIt first, InputIt last, UnaryPredicate p) {
 /* A lightcurve is valid if any flux points are positive
  */
 bool valid_lightcurve(const vector<double> &flux) {
-    return any_of(flux.begin(), flux.end(), [](const double f) {
+    return is_any_of(flux.begin(), flux.end(), [](const double f) {
             return f > 0.;
     });
 }
