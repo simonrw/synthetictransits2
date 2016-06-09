@@ -5,3 +5,5 @@ build
 *.o
 bin
 *.db
+venv
+*.fits
