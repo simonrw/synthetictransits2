@@ -226,11 +226,11 @@ pair<double, long> AlterLightcurveData(Fits &f, const long startindex, const int
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
 
     /* if the Config.isWASP parameter is set then convert the array to jd */
-    if (Config.isWASP) {
-        for (int i = 0; i < length; ++i) {
-            jd[i] = wd2jd(jd[i]);
-        }
+    /* if (Config.isWASP) { */
+    for (int i = 0; i < length; ++i) {
+        jd[i] = wd2jd(jd[i]);
     }
+    /* } */
 
     /* Now get the addition model */
     vector<double> ModelFlux = GenerateSynthetic(jd, m);
