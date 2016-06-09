@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
 #include <sstream>
@@ -42,7 +43,7 @@ T square(T val) {
     return val * val;
 }
 
-const double jd_ref = 2453005.5;
+const double jd_ref = 2456658.500000;
 
 double wd2jd(double wd) {
     return (wd / secondsInDay) + jd_ref;
@@ -174,9 +175,15 @@ T WeightedMedian(const vector<T> &data, const double siglevel, long &npts) {
 
 
 struct FalseColumnNumbers {
-    int skipdet, period, width, depth, epoch,
+    int real_obj_id, skipdet, period, width, depth, epoch,
         rp, rs, a, i;
 };
+
+string zeroPad(const string &s, int width) {
+    stringstream ss;
+    ss << setw(width) << setfill('0') << s;
+    return ss.str();
+}
 
 
 long indexOf(const stringlist &stringlist, const string &comp) {
@@ -192,6 +199,12 @@ long indexOf(const stringlist &stringlist, const string &comp) {
 
             if (stringlist.at(i) == nameWithoutWhitespace) {
                 return i;
+            } else {
+                // Zero pad
+                string nameZeroPadded = zeroPad(nameWithoutWhitespace, 6);
+                if (zeroPad(stringlist.at(i), 6) == zeroPad(nameWithoutWhitespace, 6)) {
+                    return i;
+                }
             }
         }
     }
@@ -201,7 +214,7 @@ long indexOf(const stringlist &stringlist, const string &comp) {
     throw runtime_error("Cannot find object");
 }
 
-pair<double, long> AlterLightcurveData(Fits &f, const int startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
+pair<double, long> AlterLightcurveData(Fits &f, const long startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
     /* returns a pair of the mean flux and the number
      of valid points in the lightcurve */
     f.moveHDU("HJD");
@@ -291,6 +304,18 @@ string AlterObjectName(const string &OriginalName) {
     /* Counter variable to ensure uniqueness */
     static unsigned long counter;
 
+    /* Fake naming scheme:
+     *
+     * NGTS objects are indexed by integers. We have 26 characters to play with
+     * and need to have a unique name per object.
+     */
+
+    char buf[6];
+    snprintf(buf, 6, "F%05d", counter);
+    string ResultingString(buf);
+
+
+#if 0
 
     /* Split the string at the J character */
     stringlist parts = split(OriginalName, 'J');
@@ -309,6 +334,8 @@ string AlterObjectName(const string &OriginalName) {
     if (ResultingString.size() > 26) {
         throw runtime_error("Too many objects in file (>10000000)");
     }
+
+#endif
 
     /* Increment the counter */
     counter++;
@@ -397,8 +424,18 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex) {
                 break;
             }
 
+            case TBYTE: {
+                unsigned char tmp;
+                fits_read_col(*infile.fptr(), TBYTE, i, origindex, 1, 1, NULL, &tmp, NULL, &infile.status());
+                fits_write_col(*infile.fptr(), TBYTE, i, newindex, 1, 1, &tmp, &infile.status());
+                infile.check();
+                break;
+            }
+
             default:
-                throw runtime_error("Unknown column type found");
+                stringstream ss;
+                ss << "Unknown column type found: " << typecode;
+                throw runtime_error(ss.str());
         }
 
     }
@@ -420,7 +457,7 @@ class FetchesParameters {
             }
         }
 
-        long nmodels() {
+        long nmodels() const {
             const string sql = "SELECT count(*) FROM addmodels;";
             sqlite3_stmt *stmt;
             sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
@@ -469,10 +506,14 @@ class FetchesParameters {
             return model;
         }
 
+        // TODO: why are some names NULL?
         vector<Model> fetch_models() {
             const string sql = "select id, name, submodel_id, period, epoch, a, "
                 "i, rs, rp, mstar, c1, c2, c3, c4, teff "
-                "from addmodels";
+                "from addmodels "
+                "where name is not null "
+                "order by name asc"
+                ;
             sqlite3_stmt *stmt;
             sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
             vector<Model> models;
@@ -501,6 +542,81 @@ class FetchesParameters {
         sqlite3 *ppDb;
 
 };
+
+stringlist extract_object_names(ReadOnlyFits &infile, long &nrows) {
+    stringlist ObjectNames;
+    infile.moveHDU("CATALOGUE");
+    int obj_id_colno = infile.columnNumber("OBJ_ID");
+
+    /* Read the data in as strings */
+    int dispwidth;
+    fits_get_col_display_width(*infile.fptr(), obj_id_colno, &dispwidth, &infile.status());
+
+    nrows = 0;
+    fits_get_num_rows(*infile.fptr(), &nrows, &infile.status());
+
+    vector<char *> cstrnames(nrows);
+
+    for (int i = 0; i < nrows; ++i) {
+        cstrnames[i] = new char[dispwidth + 1];
+    }
+
+    fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
+
+    for (int i = 0; i < nrows; ++i) {
+        string CurrentName = cstrnames[i];
+        /* Remove all whitespace */
+        CurrentName.erase(remove_if(CurrentName.begin(), CurrentName.end(), ::isspace), CurrentName.end());
+        ObjectNames.push_back(CurrentName);
+        delete[] cstrnames[i];
+    }
+
+    return ObjectNames;
+}
+
+/* Copy from the documentation as ICC does not support this */
+template< class InputIt, class UnaryPredicate >
+bool any_of(InputIt first, InputIt last, UnaryPredicate p) {
+    return std::find_if(first, last, p) != last;
+}
+
+
+/* A lightcurve is valid if any flux points are positive
+ */
+bool valid_lightcurve(const vector<double> &flux) {
+    return any_of(flux.begin(), flux.end(), [](const double f) {
+            return f > 0.;
+    });
+}
+
+vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFits &infile) {
+    vector<Model> out;
+
+    long nrows;
+    stringlist object_names = extract_object_names(infile, nrows);
+
+    infile.moveHDU("FLUX");
+    long naxes[2];
+    fits_get_img_size(*infile.fptr(), 2, naxes, &infile.status());
+    infile.check();
+
+    vector<double> buffer(naxes[0]);
+    cout << "Computing the list of valid lightcurves" << endl;
+    for (auto itr=models.begin(); itr!=models.end(); itr++) {
+        auto object_name = itr->name;
+        /* Get the index of the original lightcurve */
+        long SourceIndex = indexOf(object_names, object_name);
+
+        fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0], 0, &buffer[0], 0, &infile.status());
+        infile.check();
+
+        if (valid_lightcurve(buffer)) {
+            out.push_back(*itr);
+        }
+    }
+
+    return out;
+}
 
 int main(int argc, char *argv[]) {
     try {
@@ -576,15 +692,20 @@ int main(int argc, char *argv[]) {
         /* Open the sqlite3 database here */
         FetchesParameters param_fetcher(candidates_arg.getValue());
 
-        /* get the required number of new objects */
-        int nextra = param_fetcher.nmodels();
+        /* get the new models to insert */
+        vector<Model> models = param_fetcher.fetch_models();
+        int nextra = models.size();
 
         if (nextra == 0) {
             throw runtime_error("No input models found");
         }
 
-        cout << "Inserting " << nextra << " extra models" << endl;
+        /* Some lightcurves have no data, so compute the new number of extra
+         * objects */
+        vector<Model> valid_models = compute_valid_extra_models(models, infile);
+        int valid_nextra = valid_models.size();
 
+        cout << "Inserting " << valid_nextra << " valid extra models (found " << nextra << " in total)" << endl;
 
         for (int hdu = 2; hdu <= nhdus; ++hdu) {
             int status = 0;
@@ -613,7 +734,7 @@ int main(int argc, char *argv[]) {
                 fits_get_img_type(*outfile.fptr(), &bitpix, &outfile.status());
                 outfile.check();
 
-                long newnaxes[] = {naxes[0], naxes[1] + nextra};
+                long newnaxes[] = {naxes[0], naxes[1] + valid_nextra};
 
                 fits_resize_img(*outfile.fptr(), bitpix, 2, newnaxes, &outfile.status());
                 outfile.check();
@@ -637,15 +758,15 @@ int main(int argc, char *argv[]) {
 
                     /* Append extra rows */
 
-                    fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
+                    fits_insert_rows(*outfile.fptr(), nrows, valid_nextra, &outfile.status());
                     outfile.check();
 
-                    cout << " -> " << nrows + nextra << " rows";
+                    cout << " -> " << nrows + valid_nextra << " rows";
 
                     /* Need 9 extra columns */
 
-                    char *ColumnNames[] = {"SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
-                    char *ColumnFormats[] = {"1I", "1D", "1D", "1D", "1D", "1D", "1D", "1D", "1D"};
+                    char *ColumnNames[] = {"REAL_OBJ_ID", "SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
+                    char *ColumnFormats[] = {"6A", "1I", "1D", "1D", "1D", "1D", "1D", "1D", "1D", "1D"};
 
                     size_t nNewCols = sizeof(ColumnNames) / sizeof(char *);
                     assert((sizeof(ColumnFormats) / sizeof(char *)) == nNewCols);
@@ -670,14 +791,12 @@ int main(int argc, char *argv[]) {
 
         }
 
-
         ts.stop("copy");
-
-        /* File copy finished */
 
         /* Prefetch the column numbers for later use */
         outfile.moveHDU("CATALOGUE");
         FalseColumnNumbers fcn;
+        fcn.real_obj_id = outfile.columnNumber("REAL_OBJ_ID");
         fcn.skipdet = outfile.columnNumber("SKIPDET");
         fcn.period = outfile.columnNumber("FAKE_PERIOD");
         fcn.width = outfile.columnNumber("FAKE_WIDTH");
@@ -697,40 +816,13 @@ int main(int argc, char *argv[]) {
 
 
         /* Get a list of the objects in the file */
-        stringlist ObjectNames;
-        infile.moveHDU("CATALOGUE");
-        int obj_id_colno = infile.columnNumber("OBJ_ID");
-
-        /* Read the data in as strings */
-        int dispwidth;
-        fits_get_col_display_width(*infile.fptr(), obj_id_colno, &dispwidth, &infile.status());
-
         long nrows;
-        fits_get_num_rows(*infile.fptr(), &nrows, &infile.status());
-
-        vector<char *> cstrnames(nrows);
-
-        for (int i = 0; i < nrows; ++i) {
-            cstrnames[i] = new char[dispwidth + 1];
-        }
-
-        fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
-
-        for (int i = 0; i < nrows; ++i) {
-            string CurrentName = cstrnames[i];
-            /* Remove all whitespace */
-            CurrentName.erase(remove_if(CurrentName.begin(), CurrentName.end(), ::isspace), CurrentName.end());
-            ObjectNames.push_back(CurrentName);
-            delete[] cstrnames[i];
-        }
+        stringlist ObjectNames = extract_object_names(infile, nrows);
 
         long counter = 0;
-        cout << "Generating models" << endl;
 
-        vector<Model> models = param_fetcher.fetch_models();
-
-        for (vector<Model>::const_iterator itr = models.begin();
-                itr != models.end();
+        for (vector<Model>::const_iterator itr = valid_models.begin();
+                itr != valid_models.end();
                 itr++) {
             const Model Current = *itr;
 
@@ -837,9 +929,9 @@ int main(int argc, char *argv[]) {
 
             /* Write the new name to the obj_id column */
             string NewName = AlterObjectName(Current.name);
-            char *cstr = new char[26];
-            strcpy(cstr, NewName.c_str());
-            fits_write_col_str(*outfile.fptr(), obj_id_colno, CatalogueIndex, 1, 1, &cstr, &outfile.status());
+            char *cstr = new char[6];
+            strncpy(cstr, NewName.c_str(), 6);
+            fits_write_col_str(*outfile.fptr(), fcn.real_obj_id, CatalogueIndex, 1, 1, &cstr, &outfile.status());
             delete[] cstr;
 
             /* Update the flux mean and npts columns */
@@ -855,7 +947,7 @@ int main(int argc, char *argv[]) {
 
 
             stringstream ss;
-            ss << counter + 1 << "/" << nextra;
+            ss << counter + 1 << "/" << valid_nextra;
             OverPrint(ss.str());
 
             ++counter;
