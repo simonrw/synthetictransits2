@@ -33,9 +33,15 @@ enum {
 
 struct ConfigContainer {
     bool isWASP;
+    // Equivalent to isWASP...
+    bool isNGTS;
     string DatabaseFilename;
     string SourceFilename;
     string OutputFilename;
+
+    bool isWASPLike() const {
+        return isWASP || isNGTS;
+    }
 };
 
 template <typename T>
@@ -225,12 +231,12 @@ pair<double, long> AlterLightcurveData(Fits &f, const long startindex, const int
     /* Fetch the jd data */
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
 
-    /* if the Config.isWASP parameter is set then convert the array to jd */
-    /* if (Config.isWASP) { */
-    for (int i = 0; i < length; ++i) {
-        jd[i] = wd2jd(jd[i]);
+    // if the Config.isWASPLike parameter is set then convert the array to jd
+    if (Config.isWASPLike()) {
+        for (int i = 0; i < length; ++i) {
+            jd[i] = wd2jd(jd[i]);
+        }
     }
-    /* } */
 
     /* Now get the addition model */
     vector<double> ModelFlux = GenerateSynthetic(jd, m);
@@ -657,13 +663,14 @@ int main(int argc, char *argv[]) {
             cout << Project << " project found" << endl;
 
             Config.isWASP = (Project == "WASP") ? true : false;
+            Config.isNGTS = (Project == "NGTS") ? true : false;
         }
 
         Config.DatabaseFilename = candidates_arg.getValue();
         Config.SourceFilename = infile_arg.getValue();
         Config.OutputFilename = output_arg.getValue();
 
-        if (Config.isWASP) {
+        if (Config.isWASPLike()) {
             cout << "--- Converting times to WASP data" << endl;
         }
 
