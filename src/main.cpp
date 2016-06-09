@@ -772,7 +772,7 @@ int main(int argc, char *argv[]) {
 
                     /* Need 9 extra columns */
 
-                    char *ColumnNames[] = {"REAL_OBJ_ID", "SKIPDET", "FAKE_PERIOD", "FAKE_WIDTH", "FAKE_DEPTH", "FAKE_EPOCH", "FAKE_RP", "FAKE_RS", "FAKE_A", "FAKE_I"};
+                    char *ColumnNames[] = {"REAL_OBJ_ID", "SKIPDET", "TRANS_PERIOD", "TRANS_WIDTH", "TRANS_DEPTH", "TRANS_EPOCH", "TRANS_RP", "TRANS_RS", "TRANS_A", "TRANS_I"};
                     char *ColumnFormats[] = {"6A", "1I", "1D", "1D", "1D", "1D", "1D", "1D", "1D", "1D"};
 
                     size_t nNewCols = sizeof(ColumnNames) / sizeof(char *);
@@ -805,14 +805,14 @@ int main(int argc, char *argv[]) {
         FalseColumnNumbers fcn;
         fcn.real_obj_id = outfile.columnNumber("REAL_OBJ_ID");
         fcn.skipdet = outfile.columnNumber("SKIPDET");
-        fcn.period = outfile.columnNumber("FAKE_PERIOD");
-        fcn.width = outfile.columnNumber("FAKE_WIDTH");
-        fcn.depth = outfile.columnNumber("FAKE_DEPTH");
-        fcn.epoch = outfile.columnNumber("FAKE_EPOCH");
-        fcn.rp = outfile.columnNumber("FAKE_RP");
-        fcn.rs = outfile.columnNumber("FAKE_RS");
-        fcn.a = outfile.columnNumber("FAKE_A");
-        fcn.i = outfile.columnNumber("FAKE_I");
+        fcn.period = outfile.columnNumber("TRANS_PERIOD");
+        fcn.width = outfile.columnNumber("TRANS_WIDTH");
+        fcn.depth = outfile.columnNumber("TRANS_DEPTH");
+        fcn.epoch = outfile.columnNumber("TRANS_EPOCH");
+        fcn.rp = outfile.columnNumber("TRANS_RP");
+        fcn.rs = outfile.columnNumber("TRANS_RS");
+        fcn.a = outfile.columnNumber("TRANS_A");
+        fcn.i = outfile.columnNumber("TRANS_I");
         outfile.check();
 
 

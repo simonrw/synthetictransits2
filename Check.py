@@ -67,14 +67,14 @@ def main(args):
     #HJD = f['hjd'].data
 
     ## get the objects where the width is not 0
-    Widths = Catalogue.field("FAKE_WIDTH")
-    Epochs = wd2jd(Catalogue.field("FAKE_EPOCH"))
-    Periods = Catalogue.field("FAKE_PERIOD")
-    Depths = Catalogue.field("FAKE_DEPTH")
-    RPlanets = Catalogue.field('FAKE_RP')
-    RStars = Catalogue.field('FAKE_RS')
-    Inclinations = Catalogue.field("FAKE_I")
-    Separations = Catalogue.field("FAKE_A")
+    Widths = Catalogue.field("TRANS_WIDTH")
+    Epochs = wd2jd(Catalogue.field("TRANS_EPOCH"))
+    Periods = Catalogue.field("TRANS_PERIOD")
+    Depths = Catalogue.field("TRANS_DEPTH")
+    RPlanets = Catalogue.field('TRANS_RP')
+    RStars = Catalogue.field('TRANS_RS')
+    Inclinations = Catalogue.field("TRANS_I")
+    Separations = Catalogue.field("TRANS_A")
     Names = Catalogue.field('OBJ_ID')
     #Index, = where(Widths!=0)
 
