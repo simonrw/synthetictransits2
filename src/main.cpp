@@ -302,13 +302,10 @@ stringlist split(const string &s, char delim) {
 
 This function alters the object name to be unique in the
 catalogue list. */
-string AlterObjectName(const string &OriginalName) {
+string GenerateNewObjectName(long counter) {
     /* The name MUST be unique as Orion uses a dictionary to see
     if the object already exists. Therefore a new naming scheme must
     be created.  */
-
-    /* Counter variable to ensure uniqueness */
-    static unsigned long counter;
 
     /* Fake naming scheme:
      *
@@ -316,38 +313,11 @@ string AlterObjectName(const string &OriginalName) {
      * and need to have a unique name per object.
      */
 
-    char buf[6];
-    snprintf(buf, 6, "F%05lu", counter);
+    char buf[7];
+    snprintf(buf, 7, "F%05lu", counter);
     string ResultingString(buf);
 
-
-#if 0
-
-    /* Split the string at the J character */
-    stringlist parts = split(OriginalName, 'J');
-
-    /* check the length for validity */
-    if (parts.size() != 2) {
-        throw runtime_error("Unknown object name encountered");
-    }
-
-    stringstream NewName;
-    NewName.flags(ios::left);
-    NewName << setw(7) << counter << "J" << parts[1];
-    string ResultingString = NewName.str();
-
-    /* Allow up to 10 million objects to be created */
-    if (ResultingString.size() > 26) {
-        throw runtime_error("Too many objects in file (>10000000)");
-    }
-
-#endif
-
     /* Increment the counter */
-    counter++;
-
-
-
     return ResultingString;
 }
 
@@ -801,7 +771,10 @@ int main(int argc, char *argv[]) {
         ts.stop("copy");
 
         /* Prefetch the column numbers for later use */
+
         outfile.moveHDU("CATALOGUE");
+		int obj_id_column_number = outfile.columnNumber("OBJ_ID");
+
         FalseColumnNumbers fcn;
         fcn.real_obj_id = outfile.columnNumber("REAL_OBJ_ID");
         fcn.skipdet = outfile.columnNumber("SKIPDET");
@@ -935,10 +908,17 @@ int main(int argc, char *argv[]) {
 
 
             /* Write the new name to the obj_id column */
-            string NewName = AlterObjectName(Current.name);
-            char *cstr = new char[6];
-            strncpy(cstr, NewName.c_str(), 6);
-            fits_write_col_str(*outfile.fptr(), fcn.real_obj_id, CatalogueIndex, 1, 1, &cstr, &outfile.status());
+			char *current_name_cstr = const_cast<char*>(Current.name.c_str());
+            string NewName = GenerateNewObjectName(counter);
+            char *cstr = new char[7];
+            strncpy(cstr, NewName.c_str(), 7);
+            /* Write the real object id to REAL_OBJ_ID column, and the fake object
+             * id to the OBJ_ID column */
+            fits_write_col_str(*outfile.fptr(), fcn.real_obj_id, CatalogueIndex, 1, 1, &current_name_cstr, &outfile.status());
+            outfile.check();
+			fits_write_col_str(*outfile.fptr(), obj_id_column_number, CatalogueIndex, 1, 1,
+							   &cstr, &outfile.status());
+            outfile.check();
             delete[] cstr;
 
             /* Update the flux mean and npts columns */
