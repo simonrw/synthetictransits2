@@ -557,12 +557,13 @@ bool is_any_of(InputIt first, InputIt last, UnaryPredicate p) {
 }
 
 
-/* A lightcurve is valid if any flux points are positive
+/* A lightcurve is valid if 70% of the flux points are positive
  */
 bool valid_lightcurve(const vector<double> &flux) {
-    return is_any_of(flux.begin(), flux.end(), [](const double f) {
-            return f > 0.;
-    });
+    int nvalid_points = std::count_if(flux.begin(), flux.end(), [](const double f) {
+                return true;
+            });
+    return (float(nvalid_points) / float(flux.size())) >= 0.7;
 }
 
 vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFits &infile) {
