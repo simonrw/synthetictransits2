@@ -25,7 +25,8 @@ clean:
 	@-rm $(RUN)
 
 test: $(RUN)
-	$(RUN) -o out.fits -c models.db -i NG0522-2518.fits
+	$(RUN) -o out.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i ../testdata/NG0522-2518.fits
 
 gdb: $(RUN)
 	gdb --args $(RUN) -o out.fits -c models.db -i NG0522-2518.fits
