@@ -633,7 +633,6 @@ class RunCommand {
 
 // Run shell command
 void exec(const char *cmd) {
-    cout << "Running command [" << cmd << "]" << endl;
     RunCommand rc(cmd);
 }
 
