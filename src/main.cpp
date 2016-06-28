@@ -561,7 +561,7 @@ bool is_any_of(InputIt first, InputIt last, UnaryPredicate p) {
  */
 bool valid_lightcurve(const vector<double> &flux) {
     int nvalid_points = std::count_if(flux.begin(), flux.end(), [](const double f) {
-                return true;
+                return f > 0.0;
             });
     return (float(nvalid_points) / float(flux.size())) >= 0.7;
 }
