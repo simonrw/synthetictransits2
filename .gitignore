@@ -8,3 +8,5 @@ bin
 venv
 *.fits
 .ipynb_checkpoints
+flux.txt
+hjd.txt

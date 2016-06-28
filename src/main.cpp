@@ -221,7 +221,9 @@ long indexOf(const stringlist &stringlist, const string &comp) {
     throw runtime_error("Cannot find object");
 }
 
-pair<double, long> AlterLightcurveData(Fits &f, const long startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
+vector<double> generate_model(const vector<double> &hjd, const string &models_filename, const Model &model);
+
+pair<double, long> AlterLightcurveData(Fits &f, const string &models_filename, const long startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
     /* returns a pair of the mean flux and the number
      of valid points in the lightcurve */
     f.moveHDU("HJD");
@@ -240,7 +242,7 @@ pair<double, long> AlterLightcurveData(Fits &f, const long startindex, const int
     }
 
     /* Now get the addition model */
-    vector<double> ModelFlux = GenerateSynthetic(jd, m);
+    vector<double> ModelFlux = generate_model(jd, models_filename, m); // GenerateSynthetic(jd, m);
 
     f.moveHDU("FLUX");
     vector<double> OriginalFlux(length);
@@ -489,6 +491,18 @@ class FetchesParameters {
                 "i, rs, rp, mstar, c1, c2, c3, c4, teff "
                 "from addmodels "
                 "where name is not null "
+                "and period is not null "
+                "and epoch is not null "
+                "and a is not null "
+                "and i is not null "
+                "and rs is not null "
+                "and rp is not null "
+                "and mstar is not null "
+                "and c1 is not null "
+                "and c2 is not null "
+                "and c3 is not null "
+                "and c4 is not null "
+                "and teff is not null "
                 "order by name asc"
                 ;
             sqlite3_stmt *stmt;
@@ -596,18 +610,82 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     return out;
 }
 
+class RunCommand {
+    public:
+        RunCommand(const char *cmd) : f(NULL) {
+            f = popen(cmd, "r");
+            if (!f) {
+                throw runtime_error("Error spawning subprocess");
+            }
+        }
+
+        ~RunCommand() {
+            int status_code = pclose(f);
+            if (status_code != 0) {
+                throw runtime_error("Error running subcommand");
+            }
+        }
+
+    private:
+        FILE *f;
+
+};
+
 // Run shell command
 void exec(const char *cmd) {
-    shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) throw std::runtime_error("popen() failed");
+    cout << "Running command [" << cmd << "]" << endl;
+    RunCommand rc(cmd);
 }
 
-vector<double> generate_model(const vector<double> &hjd, const string &hjd_filename, double t0, double period,
-        double rp, double a, double inc, double c1, double c2, double c3, double c4,
-        const string &output_filename) {
-    vector<double> flux;
+void exec(const vector<string> &cmd) {
+    stringstream ss;
+    for (auto word: cmd) {
+        ss << word << " ";
+    }
+    exec(ss.str().c_str());
+}
 
+vector<double> generate_model(const vector<double> &hjd, const string &models_filename, const Model &model) {
 
+    const string hjd_filename = "hjd.txt";
+    const string flux_filename = "flux.txt";
+
+    ofstream outfile(hjd_filename.c_str());
+    if (!outfile.is_open()) {
+        throw std::runtime_error("Cannot open hjd file for writing");
+    }
+    for (auto value: hjd) {
+        outfile << value << endl;
+    }
+    outfile.close();
+
+    // Generate the model
+    vector<string> cmd;
+    cmd.push_back("/usr/local/python/bin/python");
+    cmd.push_back("generate_model.py");
+    cmd.push_back(hjd_filename);
+    cmd.push_back("--model-name");
+    cmd.push_back(model.name);
+    cmd.push_back("--candidates");
+    cmd.push_back(models_filename);
+    cmd.push_back("-o");
+    cmd.push_back(flux_filename);
+    exec(cmd);
+
+    vector<double> flux(hjd.size());
+    string line;
+    ifstream infile(flux_filename.c_str());
+
+    if (!infile.is_open()) {
+        throw std::runtime_error("Cannot read from flux file");
+    }
+
+    while (getline(infile, line)) {
+        istringstream buffer(line);
+        double value;
+        buffer >> value;
+        flux.push_back(value);
+    }
 
     return flux;
 }
@@ -685,7 +763,7 @@ int main(int argc, char *argv[]) {
 
 
         /* Open the sqlite3 database here */
-        FetchesParameters param_fetcher(candidates_arg.getValue());
+        FetchesParameters param_fetcher(Config.DatabaseFilename);
 
         /* get the new models to insert */
         vector<Model> models = param_fetcher.fetch_models();
@@ -873,7 +951,7 @@ int main(int argc, char *argv[]) {
             outfile.check();
 
             /* Add a transit model to the data */
-            pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, OutputIndex * naxes[0] + 1, naxes[0], Current, ArithMeth("+"), Config);
+            pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, Config.DatabaseFilename, OutputIndex * naxes[0] + 1, naxes[0], Current, ArithMeth("+"), Config);
 
 
             /* And update the catalogue false transits information */
