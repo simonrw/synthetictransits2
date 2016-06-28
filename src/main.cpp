@@ -649,14 +649,16 @@ vector<double> generate_model(const vector<double> &hjd, const string &models_fi
     const string hjd_filename = "hjd.txt";
     const string flux_filename = "flux.txt";
 
-    ofstream outfile(hjd_filename.c_str());
-    if (!outfile.is_open()) {
+    FILE *outfile = fopen(hjd_filename.c_str(), "w");
+    if (!outfile) {
         throw std::runtime_error("Cannot open hjd file for writing");
     }
+
     for (auto value: hjd) {
-        outfile << value << endl;
+        fprintf(outfile, "%.10lf\n", value);
     }
-    outfile.close();
+
+    fclose(outfile);
 
     // Generate the model
     vector<string> cmd;
