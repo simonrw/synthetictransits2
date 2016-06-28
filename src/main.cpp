@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <cmath>
 #include <cstdlib>
+#include <memory>
 #include <fstream>
 #include <sqlite3.h>
 
@@ -593,6 +594,22 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     }
 
     return out;
+}
+
+// Run shell command
+void exec(const char *cmd) {
+    shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) throw std::runtime_error("popen() failed");
+}
+
+vector<double> generate_model(const vector<double> &hjd, const string &hjd_filename, double t0, double period,
+        double rp, double a, double inc, double c1, double c2, double c3, double c4,
+        const string &output_filename) {
+    vector<double> flux;
+
+
+
+    return flux;
 }
 
 int main(int argc, char *argv[]) {
