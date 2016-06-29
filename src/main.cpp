@@ -675,6 +675,7 @@ vector<double> generate_model(const vector<double> &hjd, const Model &model) {
 
     double *pflux = light_curve(&params, &hjd[0], hjd.size());
     vector<double> flux(pflux, pflux + hjd.size());
+    free(pflux);
 
 #if 0
     const string hjd_filename = "hjd.txt";
