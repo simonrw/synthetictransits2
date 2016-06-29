@@ -29,6 +29,7 @@ bin:
 
 clean:
 	@-find . -name '*.o' -delete
+	@-$(MAKE) -C $(BATMANDIR) clean
 	@-rm $(RUN)
 
 test: $(RUN)
