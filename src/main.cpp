@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cassert>
 #include <stdexcept>
+#include <map>
 #include <algorithm>
 #include <fitsio.h>
 #include <tclap/CmdLine.h>
@@ -190,6 +191,13 @@ struct FalseColumnNumbers {
 string zeroPad(const string &s, int width) {
     stringstream ss;
     ss << setw(width) << setfill('0') << s;
+    return ss.str();
+}
+
+// Return the 6 character zero padded name
+string sanitise_object_name(const string &name) {
+    ostringstream ss;
+    ss << setfill('0') << setw(6) << name;
     return ss.str();
 }
 
@@ -535,8 +543,8 @@ class FetchesParameters {
 
 };
 
-stringlist extract_object_names(ReadOnlyFits &infile, long &nrows) {
-    stringlist ObjectNames;
+map<string, unsigned int> extract_object_names(ReadOnlyFits &infile, long &nrows) {
+    map<string, unsigned int> ObjectNames;
     infile.moveHDU("CATALOGUE");
     int obj_id_colno = infile.columnNumber("OBJ_ID");
 
@@ -556,10 +564,10 @@ stringlist extract_object_names(ReadOnlyFits &infile, long &nrows) {
     fits_read_col_str(*infile.fptr(), obj_id_colno, 1, 1, nrows, 0, &cstrnames[0], 0, &infile.status());
 
     for (int i = 0; i < nrows; ++i) {
-        string CurrentName = cstrnames[i];
+        string CurrentName = sanitise_object_name(cstrnames[i]);
         /* Remove all whitespace */
         CurrentName.erase(remove_if(CurrentName.begin(), CurrentName.end(), ::isspace), CurrentName.end());
-        ObjectNames.push_back(CurrentName);
+        ObjectNames.insert(make_pair(CurrentName, i));
         delete[] cstrnames[i];
     }
 
@@ -586,7 +594,7 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     vector<Model> out;
 
     long nrows;
-    stringlist object_names = extract_object_names(infile, nrows);
+    map<string, unsigned int> object_names = extract_object_names(infile, nrows);
 
     infile.moveHDU("FLUX");
     long naxes[2];
@@ -596,9 +604,9 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     vector<double> buffer(naxes[0]);
     cout << "Computing the list of valid lightcurves" << endl;
     for (auto itr=models.begin(); itr!=models.end(); itr++) {
-        auto object_name = itr->name;
+        auto object_name = sanitise_object_name(itr->name);
         /* Get the index of the original lightcurve */
-        long SourceIndex = indexOf(object_names, object_name);
+        unsigned int SourceIndex = object_names[object_name];
 
         fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0], 0, &buffer[0], 0, &infile.status());
         infile.check();
@@ -917,7 +925,7 @@ int main(int argc, char *argv[]) {
 
         /* Get a list of the objects in the file */
         long nrows;
-        stringlist ObjectNames = extract_object_names(infile, nrows);
+        map<string, unsigned int> ObjectNames = extract_object_names(infile, nrows);
 
         long counter = 0;
 
@@ -934,7 +942,7 @@ int main(int argc, char *argv[]) {
             const long CatalogueIndex = OutputIndex + 1;
 
             /* Get the index of the original lightcurve */
-            long SourceIndex = indexOf(ObjectNames, Current.name);
+            long SourceIndex = ObjectNames[sanitise_object_name(Current.name)];
 
 
             /* Copy the original data to the new location */
