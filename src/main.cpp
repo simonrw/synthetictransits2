@@ -12,6 +12,7 @@
 #include <memory>
 #include <fstream>
 #include <sqlite3.h>
+#include <batman.h>
 
 /* Local includes */
 #include "timer.h"
@@ -221,7 +222,7 @@ long indexOf(const stringlist &stringlist, const string &comp) {
     throw runtime_error("Cannot find object");
 }
 
-vector<double> generate_model(const vector<double> &hjd, const string &models_filename, const Model &model);
+vector<double> generate_model(const vector<double> &hjd, const Model &model);
 
 pair<double, long> AlterLightcurveData(Fits &f, const string &models_filename, const long startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
     /* returns a pair of the mean flux and the number
@@ -242,7 +243,7 @@ pair<double, long> AlterLightcurveData(Fits &f, const string &models_filename, c
     }
 
     /* Now get the addition model */
-    vector<double> ModelFlux = generate_model(jd, models_filename, m); // GenerateSynthetic(jd, m);
+    vector<double> ModelFlux = generate_model(jd, m);
 
     f.moveHDU("FLUX");
     vector<double> OriginalFlux(length);
@@ -644,8 +645,30 @@ void exec(const vector<string> &cmd) {
     exec(ss.str().c_str());
 }
 
-vector<double> generate_model(const vector<double> &hjd, const string &models_filename, const Model &model) {
+vector<double> generate_model(const vector<double> &hjd, const Model &model) {
+    NonlinearLimbDarkeningParameters ldc;
+    ldc.c1 = model.c1;
+    ldc.c2 = model.c2;
+    ldc.c3 = model.c3;
+    ldc.c4 = model.c4;
 
+    // Stellar radius in metres
+    double stellar_radius = model.rs * rSun;
+
+    Params params;
+    params.t0 = jd2wd(model.epoch);
+    params.per = model.period * 86400.;
+    params.rp = (model.rp * rJup) / stellar_radius;
+    params.a = (model.a * AU) / stellar_radius;
+    params.inc = model.i;
+    params.ecc = 0.;
+    params.w = 90.;
+    params.ldc = ldc;
+
+    double *pflux = light_curve(&params, &hjd[0], hjd.size());
+    vector<double> flux(pflux, pflux + hjd.size());
+
+#if 0
     const string hjd_filename = "hjd.txt";
     const string flux_filename = "flux.txt";
 
@@ -673,7 +696,6 @@ vector<double> generate_model(const vector<double> &hjd, const string &models_fi
     cmd.push_back(flux_filename);
     exec(cmd);
 
-    vector<double> flux(hjd.size());
     string line;
     ifstream infile(flux_filename.c_str());
 
@@ -687,6 +709,7 @@ vector<double> generate_model(const vector<double> &hjd, const string &models_fi
         buffer >> value;
         flux.push_back(value);
     }
+#endif
 
     return flux;
 }
