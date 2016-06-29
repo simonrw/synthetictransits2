@@ -7,3 +7,6 @@
 [submodule "FitsObject"]
 	path = FitsObject
 	url = git@github.com:mindriot101/fitsobject.git
+[submodule "external/libbatman"]
+	path = external/libbatman
+	url = https://github.com/mindriot101/batman
