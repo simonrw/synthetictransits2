@@ -40,8 +40,8 @@ gdb: $(RUN)
 	gdb --args $(RUN) -o out.fits -c models.db -i NG0522-2518.fits
 
 valgrind: $(RUN)
-	valgrind $(RUN) -o out-batman.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
-		-i ../testdata/NG0522-2518.fits
+	valgrind --leak-check=full $(RUN) -o out-batman.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i ../testdata/NG0522-2518.fits 2>&1 | tee valgrind.log
 
 
 .PHONY: clean test gdb
