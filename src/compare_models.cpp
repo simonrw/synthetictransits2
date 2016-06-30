@@ -59,13 +59,13 @@ vector<double> read_hjd(ReadOnlyFits &infile) {
     infile.moveHDU("IMAGELIST");
     infile.check();
 
-    int ncols = 0;
-    fits_get_num_cols(*infile.fptr(), &ncols, &infile.status());
+    long nrows = 0;
+    fits_get_num_rows(*infile.fptr(), &nrows, &infile.status());
     infile.check();
 
     int colno = infile.columnNumber("TMID");
-    vector<double> out(ncols);
-    fits_read_col(*infile.fptr(), TDOUBLE, colno, 1, 1, ncols, NULL, &out[0], NULL, &infile.status());
+    vector<double> out(nrows);
+    fits_read_col(*infile.fptr(), TDOUBLE, colno, 1, 1, nrows, NULL, &out[0], NULL, &infile.status());
     infile.check();
 
     return out;
