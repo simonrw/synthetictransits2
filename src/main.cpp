@@ -87,7 +87,7 @@ class ArithMeth {
 };
 
 double WidthFromParams(const Model &m) {
-    /* Returns the width of the full transit based on some lc parameters
+    /* Returns the width of the full transit in seconds based on some lc parameters
      *
      * \frac{P}{\pi} \asin{\sqrt{(\frac{R_P + R_S}{a})^2 - \cos^2 i}}
      */
@@ -441,11 +441,38 @@ bool is_any_of(InputIt first, InputIt last, UnaryPredicate p) {
 
 /* A lightcurve is valid if 70% of the flux points are positive
  */
-bool valid_lightcurve(const vector<double> &flux) {
+bool valid_lightcurve(const vector<double> &hjd, const vector<double> &flux,
+        double width_seconds, double period_days, double epoch_days) {
+
+    int lc_size = flux.size();
+    // First check the flux values
     int nvalid_points = std::count_if(flux.begin(), flux.end(), [](const double f) {
                 return f > 0.0;
             });
-    return (float(nvalid_points) / float(flux.size())) >= 0.7;
+
+    if (!(float(nvalid_points) / float(lc_size)) >= 0.7) {
+        return false;
+    }
+
+    // If this is ok, make sure there is at least some data during the transit
+    double epoch_seconds = jd2wd(epoch_days);
+    double period_seconds = period_days * secondsInDay;
+    double width_in_phase = width_seconds / period_seconds;
+
+    int npoints_in_transit = 0;
+    for (int i=0; i<hjd.size(); i++) {
+        double phase = fmod((hjd[i] - epoch_seconds) / period_seconds, 1);
+
+        if ((phase >= -width_in_phase / 2.) && (phase <= width_in_phase / 2.)) {
+            npoints_in_transit++;
+        }
+    }
+
+    if (npoints_in_transit < 10) {
+        return false;
+    }
+
+    return true;
 }
 
 vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFits &infile) {
@@ -459,17 +486,26 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     fits_get_img_size(*infile.fptr(), 2, naxes, &infile.status());
     infile.check();
 
-    vector<double> buffer(naxes[0]);
+    vector<double> hjd_buffer(naxes[0]), flux_buffer(naxes[0]);
+    double period = 0., epoch = 0.;
     cout << "Computing the list of valid lightcurves" << endl;
     for (auto itr=models.begin(); itr!=models.end(); itr++) {
         auto object_name = sanitise_object_name(itr->name);
         /* Get the index of the original lightcurve */
         unsigned int SourceIndex = object_names[object_name];
 
-        fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0], 0, &buffer[0], 0, &infile.status());
+        infile.moveHDU("HJD");
+        fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0],
+                0, &hjd_buffer[0], 0, &infile.status());
         infile.check();
 
-        if (valid_lightcurve(buffer)) {
+        infile.moveHDU("FLUX");
+        fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0], 0, &flux_buffer[0], 0, &infile.status());
+        infile.check();
+
+        double transit_width = WidthFromParams(*itr);
+
+        if (valid_lightcurve(hjd_buffer, flux_buffer, transit_width, itr->period, itr->epoch)) {
             out.push_back(*itr);
         }
     }
