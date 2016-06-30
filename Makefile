@@ -16,7 +16,7 @@ $(RUN): bin $(BATMANDIR)/libbatman.a $(OBJECTS)
 	$(CXX) -o $@ $(OBJECTS) ${COMMON} ${LDFLAGS}
 
 bin/compare_models: bin $(TESTOBJECTS)
-	$(CXX) -o $@ $(TESTOBJECTS) -O2 -g -lcfitsio -lsqlite3 -lm
+	$(CXX) -o $@ $(TESTOBJECTS) -O2 -g -L/usr/local/cfitsio/lib -lcfitsio -lsqlite3 -lm
 
 $(BATMANDIR)/libbatman.a:
 	$(MAKE) -C $(BATMANDIR) libbatman.a
