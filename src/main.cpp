@@ -213,10 +213,10 @@ pair<double, long> AlterLightcurveData(Fits &f, const string &models_filename, c
     /* Fetch the jd data */
     fits_read_img(*f.fptr(), TDOUBLE, startindex, length, 0, &jd[0], 0, &f.status());
 
-    // if the Config.isWASPLike parameter is set then convert the array to jd
-    if (Config.isWASPLike()) {
+    /* Convert to seconds if required */
+    if (!Config.isWASPLike()) {
         for (int i = 0; i < length; ++i) {
-            jd[i] = wd2jd(jd[i]);
+            jd[i] = jd2wd(jd[i]);
         }
     }
 
