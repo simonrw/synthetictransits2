@@ -7,10 +7,13 @@ COMMON := -Wno-write-strings -O2 -g -std=c++11
 CFLAGS := -I/usr/local/cfitsio/include -I/usr/local/tclap/include -Iinclude -Imodelgen/include -Irgwtimer/include -I$(BATMANDIR)/c_src
 LDFLAGS := -L/usr/local/cfitsio/lib -L$(BATMANDIR) -lcfitsio -lsqlite3 -lm -lbatman
 
-all: $(RUN)
+all: $(RUN) bin/compare_models
 
 $(RUN): bin $(BATMANDIR)/libbatman.a $(OBJECTS)
 	$(CXX) -o $@ $(OBJECTS) ${COMMON} ${LDFLAGS}
+
+bin/compare_models: bin $(BATMANDIR)/libbatman.a src/compare_models.o src/fetches_parameters.o src/GenerateModel.o src/FitsObject.o
+	$(CXX) -o $@ src/compare_models.o src/fetches_parameters.o src/GenerateModel.o src/FitsObject.o  ${COMMON} ${LDFLAGS}
 
 $(BATMANDIR)/libbatman.a:
 	$(MAKE) -C $(BATMANDIR) libbatman.a
