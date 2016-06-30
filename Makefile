@@ -10,7 +10,7 @@ LDFLAGS := -L/usr/local/cfitsio/lib -L$(BATMANDIR) -lcfitsio -lsqlite3 -lm -lbat
 TESTOBJECTS := src/compare_models.o src/fetches_parameters.o src/GenerateModel.o src/FitsObject.o external/libbatman/c_src/light_curve.o \
 	external/libbatman/c_src/_rsky.o external/libbatman/c_src/_nonlinear_ld.o external/libbatman/c_src/_eclipse.o
 
-all: $(RUN) bin/compare_models
+all: $(RUN)
 
 $(RUN): bin $(BATMANDIR)/libbatman.a $(OBJECTS)
 	$(CXX) -o $@ $(OBJECTS) ${COMMON} ${LDFLAGS}
