@@ -22,6 +22,7 @@
 #include "FitsObject.h"
 #include "constants.h"
 #include "ObjectSkipDefs.h"
+#include "fetches_parameters.h"
 
 
 
@@ -196,38 +197,7 @@ string zeroPad(const string &s, int width) {
 
 // Return the 6 character zero padded name
 string sanitise_object_name(const string &name) {
-    ostringstream ss;
-    ss << setfill('0') << setw(6) << name;
-    return ss.str();
-}
-
-
-long indexOf(const stringlist &stringlist, const string &comp) {
-
-    for (size_t i = 0; i < stringlist.size(); ++i) {
-
-        if (stringlist.at(i) == comp) {
-            return i;
-
-        } else {
-            string nameWithoutWhitespace(comp);
-            nameWithoutWhitespace.erase(remove_if(nameWithoutWhitespace.begin(), nameWithoutWhitespace.end(), ::isspace), nameWithoutWhitespace.end());
-
-            if (stringlist.at(i) == nameWithoutWhitespace) {
-                return i;
-            } else {
-                // Zero pad
-                string nameZeroPadded = zeroPad(nameWithoutWhitespace, 6);
-                if (zeroPad(stringlist.at(i), 6) == zeroPad(nameWithoutWhitespace, 6)) {
-                    return i;
-                }
-            }
-        }
-    }
-
-
-    /* If the loop gets here the object is not found */
-    throw runtime_error("Cannot find object");
+    return zeroPad(name, 6);
 }
 
 vector<double> generate_model(const vector<double> &hjd, const Model &model);
@@ -430,118 +400,6 @@ void CopyTableRow(Fits &infile, const long origindex, const long newindex) {
 
 
 }
-
-class FetchesParameters {
-    public:
-
-        FetchesParameters(const string &filename)
-            : filename(filename) {
-            sqlite3_open(filename.c_str(), &ppDb);
-        }
-
-        ~FetchesParameters() {
-            if (ppDb != NULL) {
-                sqlite3_close(ppDb);
-            }
-        }
-
-        long nmodels() const {
-            const string sql = "SELECT count(*) FROM addmodels;";
-            sqlite3_stmt *stmt;
-            sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
-            int step_state = 0;
-            int nrows = 0;
-            while (step_state != SQLITE_DONE) {
-                switch (step_state) {
-                    case SQLITE_ROW:
-                        nrows = sqlite3_column_int(stmt, 0);
-                        break;
-                    case SQLITE_ERROR:
-                        fprintf(stderr, "Error\n");
-                        exit(1);
-                }
-                step_state = sqlite3_step(stmt);
-            }
-
-            sqlite3_finalize(stmt);
-
-            return nrows;
-        }
-
-        Model model_from_statement(sqlite3_stmt *stmt) {
-            Model model;
-            int col = 0;
-            model.id = sqlite3_column_int(stmt, col++);
-
-            const unsigned char *model_name_cstr = sqlite3_column_text(stmt, col++);
-            string model_name(reinterpret_cast<const char*>(model_name_cstr));
-            model.name = model_name;
-
-            model.submodel_id = sqlite3_column_int(stmt, col++);
-            model.period = sqlite3_column_double(stmt, col++);
-            model.epoch = sqlite3_column_double(stmt, col++);
-            model.a =  sqlite3_column_double(stmt, col++);
-            model.i = sqlite3_column_double(stmt, col++);
-            model.rs = sqlite3_column_double(stmt, col++);
-            model.rp = sqlite3_column_double(stmt, col++);
-            model.mstar = sqlite3_column_double(stmt, col++);
-            model.c1 = sqlite3_column_double(stmt, col++);
-            model.c2 = sqlite3_column_double(stmt, col++);
-            model.c3 = sqlite3_column_double(stmt, col++);
-            model.c4 = sqlite3_column_double(stmt, col++);
-            model.teff = sqlite3_column_double(stmt, col++);
-
-            return model;
-        }
-
-        // TODO: why are some names NULL?
-        vector<Model> fetch_models() {
-            const string sql = "select id, name, submodel_id, period, epoch, a, "
-                "i, rs, rp, mstar, c1, c2, c3, c4, teff "
-                "from addmodels "
-                "where name is not null "
-                "and period is not null "
-                "and epoch is not null "
-                "and a is not null "
-                "and i is not null "
-                "and rs is not null "
-                "and rp is not null "
-                "and mstar is not null "
-                "and c1 is not null "
-                "and c2 is not null "
-                "and c3 is not null "
-                "and c4 is not null "
-                "and teff is not null "
-                "order by name asc"
-                ;
-            sqlite3_stmt *stmt;
-            sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
-            vector<Model> models;
-            int step_state = 0;
-            while (step_state != SQLITE_DONE) {
-                switch (step_state) {
-                    case SQLITE_ROW:
-                        models.push_back(model_from_statement(stmt));
-                        break;
-                    case SQLITE_ERROR:
-                        fprintf(stderr, "Error\n");
-                        exit(1);
-                }
-                step_state = sqlite3_step(stmt);
-            }
-
-            sqlite3_finalize(stmt);
-
-            return models;
-        }
-
-        struct StopIteration : public runtime_error {};
-
-    private:
-        string filename;
-        sqlite3 *ppDb;
-
-};
 
 map<string, unsigned int> extract_object_names(ReadOnlyFits &infile, long &nrows) {
     map<string, unsigned int> ObjectNames;

@@ -1,4 +1,4 @@
-CPPSOURCES := src/main.cpp src/FitsObject.cpp src/GenerateModel.cpp
+CPPSOURCES := src/main.cpp src/FitsObject.cpp src/GenerateModel.cpp src/fetches_parameters.cpp
 CCSOURCES := src/timer.C
 BATMANDIR := $(shell pwd)/external/libbatman
 OBJECTS := $(CPPSOURCES:.cpp=.o) $(CCSOURCES:.C=.o)
