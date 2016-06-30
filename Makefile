@@ -1,5 +1,5 @@
-CPPSOURCES := $(wildcard src/*.cpp)
-CCSOURCES := $(wildcard src/*.C)
+CPPSOURCES := src/main.cpp src/FitsObject.cpp src/GenerateModel.cpp
+CCSOURCES := src/timer.C
 BATMANDIR := $(shell pwd)/external/libbatman
 OBJECTS := $(CPPSOURCES:.cpp=.o) $(CCSOURCES:.C=.o)
 RUN := bin/synthetic_transits
