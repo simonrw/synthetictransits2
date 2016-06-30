@@ -31,15 +31,16 @@ double jd2wd(double jd) {
 }
 
 int main() {
-    FetchesParameters param_fetcher("../testdata/MODELS_NG0522-2518_802_2016_TEST16.db");
+    cout << "Fetching parameters" << endl;
+    FetchesParameters param_fetcher("/Volumes/External/synthetic-transits/MODELS_NG0522-2518_802_2016_TEST16.db");
     auto models = param_fetcher.fetch_models();
 
-    /* Some lightcurves have no data, so compute the new number of extra
-        * objects */
-    ReadOnlyFits infile("../testdata/NG0522-2518.fits");
+    cout << "Rejecting invalid models" << endl;
+    ReadOnlyFits infile("/Volumes/External/synthetic-transits/NG0522-2518.fits");
     vector<double> hjd = read_hjd(infile);
     vector<Model> valid_models = compute_valid_extra_models(models, infile);
 
+    cout << "Iterating" << endl;
     int included_models = 0;
     for (auto model: valid_models) {
         if (included_models > 10) {
