@@ -7,13 +7,16 @@ COMMON := -Wno-write-strings -O2 -g -std=c++11
 CFLAGS := -I/usr/local/cfitsio/include -I/usr/local/tclap/include -Iinclude -Imodelgen/include -Irgwtimer/include -I$(BATMANDIR)/c_src
 LDFLAGS := -L/usr/local/cfitsio/lib -L$(BATMANDIR) -lcfitsio -lsqlite3 -lm -lbatman
 
+TESTOBJECTS := src/compare_models.o src/fetches_parameters.o src/GenerateModel.o src/FitsObject.o external/libbatman/c_src/light_curve.o \
+	external/libbatman/c_src/_rsky.o external/libbatman/c_src/_nonlinear_ld.o external/libbatman/c_src/_eclipse.o
+
 all: $(RUN) bin/compare_models
 
 $(RUN): bin $(BATMANDIR)/libbatman.a $(OBJECTS)
 	$(CXX) -o $@ $(OBJECTS) ${COMMON} ${LDFLAGS}
 
-bin/compare_models: bin $(BATMANDIR)/libbatman.a src/compare_models.o src/fetches_parameters.o src/GenerateModel.o src/FitsObject.o
-	$(CXX) -o $@ src/compare_models.o src/fetches_parameters.o src/GenerateModel.o src/FitsObject.o  ${COMMON} ${LDFLAGS}
+bin/compare_models: bin $(TESTOBJECTS)
+	$(CXX) -o $@ $(TESTOBJECTS) -O2 -g -lcfitsio -lsqlite3 -lm
 
 $(BATMANDIR)/libbatman.a:
 	$(MAKE) -C $(BATMANDIR) libbatman.a
@@ -25,7 +28,7 @@ $(BATMANDIR)/libbatman.a:
 	$(CXX) -c $< -o $@ ${COMMON} ${CFLAGS}
 
 %.o: %.c
-	$(CC) -c $< -o $@ ${COMMON} ${CFLAGS}
+	$(CC) -c $< -o $@ -O2 -g ${CFLAGS}
 
 bin:
 	mkdir -p $@
@@ -36,8 +39,8 @@ clean:
 	@-rm $(RUN)
 
 test: $(RUN)
-	$(RUN) -o out-batman.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
-		-i ../testdata/NG0522-2518.fits
+	$(RUN) -o out-batman.fits -c /Volumes/External/synthetic-transits/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i /Volumes/External/synthetic-transits/NG0522-2518.fits
 
 gdb: $(RUN)
 	gdb --args $(RUN) -o out.fits -c models.db -i NG0522-2518.fits
