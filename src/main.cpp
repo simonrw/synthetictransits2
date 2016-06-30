@@ -627,11 +627,6 @@ int main(int argc, char *argv[]) {
         Config.SourceFilename = infile_arg.getValue();
         Config.OutputFilename = output_arg.getValue();
 
-        if (Config.isWASPLike()) {
-            cout << "--- Converting times to WASP data" << endl;
-        }
-
-
         NewFits outfile("!" + output_arg.getValue());
 
         /* Copy the primary hdu across */
