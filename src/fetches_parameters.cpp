@@ -18,7 +18,6 @@ FetchesParameters::~FetchesParameters() {
 Model FetchesParameters::model_from_statement(sqlite3_stmt *stmt) {
     Model model;
     int col = 0;
-    model.id = sqlite3_column_int(stmt, col++);
 
     const unsigned char *model_name_cstr = sqlite3_column_text(stmt, col++);
     string model_name(reinterpret_cast<const char*>(model_name_cstr));
@@ -43,7 +42,7 @@ Model FetchesParameters::model_from_statement(sqlite3_stmt *stmt) {
 
 // TODO: why are some names NULL?
 vector<Model> FetchesParameters::fetch_models() {
-    const string sql = "select id, name, submodel_id, period, epoch, a, "
+    const string sql = "select name, submodel_id, period, epoch, a, "
         "i, rs, rp, mstar, c1, c2, c3, c4, teff "
         "from addmodels "
         "where name is not null "
@@ -64,17 +63,30 @@ vector<Model> FetchesParameters::fetch_models() {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
     vector<Model> models;
-    int step_state = 0;
-    while (step_state != SQLITE_DONE) {
+
+    bool keep_looping = true;
+    while (keep_looping) {
+        int step_state = sqlite3_step(stmt);
+
         switch (step_state) {
+            case SQLITE_DONE:
+                keep_looping = false;
+                break;
             case SQLITE_ROW:
                 models.push_back(model_from_statement(stmt));
                 break;
             case SQLITE_ERROR:
                 fprintf(stderr, "Error\n");
-                exit(1);
+                exit(step_state > 0 ? step_state : -1);
+            case SQLITE_MISUSE:
+                const char *err_msg = sqlite3_errmsg(ppDb);
+                fprintf(stderr, "Error: %s. Number of models processed: %d\n", err_msg, models.size());
+                keep_looping = false;
+                break;
+            default:
+                fprintf(stderr, "UNKNOWN SQLITE ERROR: %d\n", step_state);
+                exit(step_state > 0 ? step_state : -1);
         }
-        step_state = sqlite3_step(stmt);
     }
 
     sqlite3_finalize(stmt);
