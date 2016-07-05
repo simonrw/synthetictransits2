@@ -488,7 +488,6 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
 
     vector<double> hjd_buffer(naxes[0]), flux_buffer(naxes[0]);
     double period = 0., epoch = 0.;
-    cout << "Computing the list of valid lightcurves" << endl;
     for (auto itr=models.begin(); itr!=models.end(); itr++) {
         auto object_name = sanitise_object_name(itr->name);
         /* Get the index of the original lightcurve */
@@ -688,6 +687,7 @@ int main(int argc, char *argv[]) {
         FetchesParameters param_fetcher(Config.DatabaseFilename);
 
         /* get the new models to insert */
+        cout << "Fetching models from database file" << endl;
         vector<Model> models = param_fetcher.fetch_models();
         int nextra = models.size();
 
@@ -697,6 +697,7 @@ int main(int argc, char *argv[]) {
 
         /* Some lightcurves have no data, so compute the new number of extra
          * objects */
+        cout << "Computing the list of valid lightcurves" << endl;
         vector<Model> valid_models = compute_valid_extra_models(models, infile);
         int valid_nextra = valid_models.size();
 
