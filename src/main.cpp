@@ -512,40 +512,6 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     return out;
 }
 
-class RunCommand {
-    public:
-        RunCommand(const char *cmd) : f(NULL) {
-            f = popen(cmd, "r");
-            if (!f) {
-                throw runtime_error("Error spawning subprocess");
-            }
-        }
-
-        ~RunCommand() {
-            int status_code = pclose(f);
-            if (status_code != 0) {
-                throw runtime_error("Error running subcommand");
-            }
-        }
-
-    private:
-        FILE *f;
-
-};
-
-// Run shell command
-void exec(const char *cmd) {
-    RunCommand rc(cmd);
-}
-
-void exec(const vector<string> &cmd) {
-    stringstream ss;
-    for (auto word: cmd) {
-        ss << word << " ";
-    }
-    exec(ss.str().c_str());
-}
-
 vector<double> generate_model(const vector<double> &hjd, const Model &model) {
     NonlinearLimbDarkeningParameters ldc;
     ldc.c1 = model.c1;
@@ -569,49 +535,6 @@ vector<double> generate_model(const vector<double> &hjd, const Model &model) {
     double *pflux = light_curve(&params, &hjd[0], hjd.size());
     vector<double> flux(pflux, pflux + hjd.size());
     free(pflux);
-
-#if 0
-    const string hjd_filename = "hjd.txt";
-    const string flux_filename = "flux.txt";
-
-    FILE *outfile = fopen(hjd_filename.c_str(), "w");
-    if (!outfile) {
-        throw std::runtime_error("Cannot open hjd file for writing");
-    }
-
-    for (auto value: hjd) {
-        fprintf(outfile, "%.10lf\n", value);
-    }
-
-    fclose(outfile);
-
-    // Generate the model
-    vector<string> cmd;
-    cmd.push_back("/usr/local/python/bin/python");
-    cmd.push_back("generate_model.py");
-    cmd.push_back(hjd_filename);
-    cmd.push_back("--model-name");
-    cmd.push_back(model.name);
-    cmd.push_back("--candidates");
-    cmd.push_back(models_filename);
-    cmd.push_back("-o");
-    cmd.push_back(flux_filename);
-    exec(cmd);
-
-    string line;
-    ifstream infile(flux_filename.c_str());
-
-    if (!infile.is_open()) {
-        throw std::runtime_error("Cannot read from flux file");
-    }
-
-    while (getline(infile, line)) {
-        istringstream buffer(line);
-        double value;
-        buffer >> value;
-        flux.push_back(value);
-    }
-#endif
 
     return flux;
 }
