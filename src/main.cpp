@@ -450,7 +450,7 @@ bool valid_lightcurve(const vector<double> &hjd, const vector<double> &flux,
                 return f > 0.0;
             });
 
-    if (!(float(nvalid_points) / float(lc_size)) >= 0.7) {
+    if ((float(nvalid_points) / float(lc_size)) < 0.7) {
         return false;
     }
 
