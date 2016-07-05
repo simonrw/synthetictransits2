@@ -65,6 +65,7 @@ vector<Model> FetchesParameters::fetch_models() {
     vector<Model> models;
 
     bool keep_looping = true;
+    char *err_msg;
     while (keep_looping) {
         int step_state = sqlite3_step(stmt);
 
@@ -78,14 +79,16 @@ vector<Model> FetchesParameters::fetch_models() {
             case SQLITE_ERROR:
                 fprintf(stderr, "Error\n");
                 exit(step_state > 0 ? step_state : -1);
+                break;
             case SQLITE_MISUSE:
-                const char *err_msg = sqlite3_errmsg(ppDb);
-                fprintf(stderr, "Error: %s. Number of models processed: %d\n", err_msg, models.size());
+                err_msg = const_cast<char*>(sqlite3_errmsg(ppDb));
+                fprintf(stderr, "Error: %s. Number of models processed: %ld\n", err_msg, models.size());
                 keep_looping = false;
                 break;
             default:
                 fprintf(stderr, "UNKNOWN SQLITE ERROR: %d\n", step_state);
                 exit(step_state > 0 ? step_state : -1);
+                break;
         }
     }
 
