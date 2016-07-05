@@ -43,7 +43,8 @@ test: $(RUN)
 		-i ../testdata/NG0522-2518.fits
 
 gdb: $(RUN)
-	gdb --args $(RUN) -o out.fits -c models.db -i NG0522-2518.fits
+	gdb --args $(RUN) -o out.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i ../testdata/NG0522-2518.fits
 
 valgrind: $(RUN)
 	valgrind --leak-check=full $(RUN) -o out-batman.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
