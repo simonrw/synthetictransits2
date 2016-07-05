@@ -3,7 +3,7 @@ CCSOURCES := src/timer.C
 BATMANDIR := $(shell pwd)/external/libbatman
 OBJECTS := $(CPPSOURCES:.cpp=.o) $(CCSOURCES:.C=.o)
 RUN := bin/synthetic_transits
-COMMON := -Wno-write-strings -O2 -g -std=c++11
+COMMON := -Wno-write-strings -O2 -g -std=c++11 -Wall -Wextra
 CFLAGS := -I/usr/local/cfitsio/include -I/usr/local/tclap/include -Iinclude -Imodelgen/include -Irgwtimer/include -I$(BATMANDIR)/c_src
 LDFLAGS := -L/usr/local/cfitsio/lib -L$(BATMANDIR) -lcfitsio -lsqlite3 -lm -lbatman
 

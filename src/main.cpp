@@ -165,7 +165,7 @@ T WeightedMedian(const vector<T> &data, const double siglevel, long &npts) {
     const double upperlim = av + siglevel * sd;
     const double lowerlim = av - siglevel * sd;
 
-    for (int i = 0; i < N; ++i) {
+    for (size_t i = 0; i < N; ++i) {
         if ((data.at(i) < upperlim) && (data.at(i) > lowerlim) && !isnan(data.at(i))) {
             buffer.push_back(data.at(i));
         }
@@ -202,7 +202,7 @@ string sanitise_object_name(const string &name) {
 
 vector<double> generate_model(const vector<double> &hjd, const Model &model);
 
-pair<double, long> AlterLightcurveData(Fits &f, const string &models_filename, const long startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
+pair<double, long> AlterLightcurveData(Fits &f, const long startindex, const int length, const Model &m, const ArithMeth &arithtype, const ConfigContainer &Config) {
     /* returns a pair of the mean flux and the number
      of valid points in the lightcurve */
     f.moveHDU("HJD");
@@ -312,9 +312,6 @@ void OverPrint(const T &val) {
 
 /* Function to copy a row from a table across to a new position in the same table */
 void CopyTableRow(Fits &infile, const long origindex, const long newindex) {
-    /* Current hdu must be on a binary table */
-    const long nrows = infile.nrows();
-
     /* Get the number of columns */
     int ncols;
     fits_get_num_cols(*infile.fptr(), &ncols, &infile.status());
@@ -460,7 +457,7 @@ bool valid_lightcurve(const vector<double> &hjd, const vector<double> &flux,
     double width_in_phase = width_seconds / period_seconds;
 
     int npoints_in_transit = 0;
-    for (int i=0; i<hjd.size(); i++) {
+    for (size_t i=0; i<hjd.size(); i++) {
         double phase = fmod((hjd[i] - epoch_seconds) / period_seconds, 1);
 
         if ((phase >= -width_in_phase / 2.) && (phase <= width_in_phase / 2.)) {
@@ -487,7 +484,6 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     infile.check();
 
     vector<double> hjd_buffer(naxes[0]), flux_buffer(naxes[0]);
-    double period = 0., epoch = 0.;
     for (auto itr=models.begin(); itr!=models.end(); itr++) {
         auto object_name = sanitise_object_name(itr->name);
         /* Get the index of the original lightcurve */
@@ -734,8 +730,6 @@ int main(int argc, char *argv[]) {
 
 
         ts.start("model.iterate");
-        const int NullSubIndex = -1;
-
 
         /* Get a list of the objects in the file */
         long nrows;
@@ -797,7 +791,7 @@ int main(int argc, char *argv[]) {
             outfile.check();
 
             /* Add a transit model to the data */
-            pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, Config.DatabaseFilename, OutputIndex * naxes[0] + 1, naxes[0], Current, ArithMeth("+"), Config);
+            pair<double, long> LightcurveInfo = AlterLightcurveData(outfile, OutputIndex * naxes[0] + 1, naxes[0], Current, ArithMeth("+"), Config);
 
 
             /* And update the catalogue false transits information */
