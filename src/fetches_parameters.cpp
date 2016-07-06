@@ -59,7 +59,7 @@ vector<Model> FetchesParameters::fetch_models() {
         "and c4 is not null "
         "and teff is not null "
         "and rp > 0 "
-        "order by name asc"
+        "order by cast(name as integer) asc"
         ;
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(ppDb, sql.c_str(), sql.size(), &stmt, NULL);
