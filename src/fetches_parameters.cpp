@@ -58,6 +58,7 @@ vector<Model> FetchesParameters::fetch_models() {
         "and c3 is not null "
         "and c4 is not null "
         "and teff is not null "
+        "and rp > 0 "
         "order by name asc"
         ;
     sqlite3_stmt *stmt;
