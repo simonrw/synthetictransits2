@@ -527,9 +527,9 @@ vector<double> generate_model(const vector<double> &hjd, const Model &model) {
     params.inc = model.i;
     params.ecc = 0.;
     params.w = 90.;
-    params.ldc = ldc;
+    params.nlldc = ldc;
 
-    double *pflux = light_curve(&params, &hjd[0], hjd.size());
+    double *pflux = light_curve(&params, &hjd[0], hjd.size(), NONLINEAR);
     vector<double> flux(pflux, pflux + hjd.size());
     free(pflux);
 
