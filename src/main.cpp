@@ -486,6 +486,7 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
     vector<double> hjd_buffer(naxes[0]), flux_buffer(naxes[0]);
     for (auto itr=models.begin(); itr!=models.end(); itr++) {
         auto object_name = sanitise_object_name(itr->name);
+
         /* Get the index of the original lightcurve */
         unsigned int SourceIndex = object_names[object_name];
 
@@ -870,7 +871,7 @@ int main(int argc, char *argv[]) {
 
 
             stringstream ss;
-            ss << counter + 1 << "/" << valid_nextra;
+            ss << counter + 1 << "/" << valid_nextra << ": " << Current.name;
             OverPrint(ss.str());
 
             ++counter;
