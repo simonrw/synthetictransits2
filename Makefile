@@ -39,16 +39,20 @@ clean:
 	@-rm $(RUN)
 
 test: $(RUN)
-	$(RUN) -o out.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
-		-i ../testdata/NG0522-2518.fits
+	$(RUN) -o out2.fits -c $(testdatadir)/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i $(testdatadir)/NG0522-2518.fits
 
 gdb: $(RUN)
-	gdb --args $(RUN) -o out.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
-		-i ../testdata/NG0522-2518.fits
+	gdb --args $(RUN) -o out.fits -c $(testdatadir)/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i $(testdatadir)/NG0522-2518.fits
 
 valgrind: $(RUN)
-	valgrind --leak-check=full $(RUN) -o out-batman.fits -c ../testdata/MODELS_NG0522-2518_802_2016_TEST16.db \
-		-i ../testdata/NG0522-2518.fits 2>&1 | tee valgrind.log
+	valgrind --leak-check=full $(RUN) -o out-batman.fits -c $(testdatadir)/MODELS_NG0522-2518_802_2016_TEST16.db \
+		-i $(testdatadir)/NG0522-2518.fits 2>&1 | tee valgrind.log
+
+define testdatadir
+$(if $(findstring ngts10,$(shell hostname)),/local/srw/synthetic-testdata,../testdata)
+endef
 
 
 .PHONY: clean test gdb
