@@ -510,12 +510,6 @@ vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFi
 }
 
 vector<double> generate_model(const vector<double> &hjd, const Model &model) {
-    NonlinearLimbDarkeningParameters ldc;
-    ldc.c1 = model.c1;
-    ldc.c2 = model.c2;
-    ldc.c3 = model.c3;
-    ldc.c4 = model.c4;
-
     // Stellar radius in metres
     double stellar_radius = model.rs * rSun;
 
@@ -527,9 +521,17 @@ vector<double> generate_model(const vector<double> &hjd, const Model &model) {
     params.inc = model.i;
     params.ecc = 0.;
     params.w = 90.;
-    params.nlldc = ldc;
 
-    double *pflux = light_curve(&params, &hjd[0], hjd.size(), NONLINEAR);
+    /*
+     * Quadratic limb darkening parameters for a 5250K star in the
+     * kepler bandpass
+     */
+    LimbDarkeningParameters ldc;
+    ldc.c1 = 0.4984;
+    ldc.c2 = 0.1939;
+    params.ldc = ldc;
+
+    double *pflux = light_curve(&params, &hjd[0], hjd.size(), QUADRATIC);
     vector<double> flux(pflux, pflux + hjd.size());
     free(pflux);
 
