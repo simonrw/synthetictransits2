@@ -745,6 +745,10 @@ int main(int argc, char *argv[]) {
                 itr++) {
             const Model Current = *itr;
 
+            stringstream ss;
+            ss << counter + 1 << "/" << valid_nextra << ": " << Current.name;
+            OverPrint(ss.str());
+
             /* Location to write the data to */
             const long OutputIndex = nrows + counter;
 
@@ -868,13 +872,6 @@ int main(int argc, char *argv[]) {
 
             /* Now validate */
             outfile.check();
-
-
-
-
-            stringstream ss;
-            ss << counter + 1 << "/" << valid_nextra << ": " << Current.name;
-            OverPrint(ss.str());
 
             ++counter;
         }
