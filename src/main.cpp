@@ -465,7 +465,8 @@ bool valid_lightcurve(const vector<double> &hjd, const vector<double> &flux,
         }
     }
 
-    if (npoints_in_transit < 10) {
+    /* around 3 hours of data must exist in transit */
+    if (npoints_in_transit < 1000) {
         return false;
     }
 
