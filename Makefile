@@ -11,6 +11,7 @@ TESTOBJECTS := src/compare_models.o src/fetches_parameters.o src/GenerateModel.o
 	external/libbatman/c_src/_rsky.o external/libbatman/c_src/_nonlinear_ld.o external/libbatman/c_src/_eclipse.o
 
 testdatadir := $(shell python ./find_testdata_dir.py)
+outputdir := $(testdatadir)
 
 all: $(RUN)
 
@@ -59,9 +60,5 @@ gdb: $(RUN)
 valgrind: $(RUN)
 	valgrind --leak-check=full $(RUN) -o $(outputdir)/out-valgrind.fits -c $(testdatadir)/MODELS_NG0522-2518_802_2016_TEST16.db \
 		-i $(testdatadir)/NG0522-2518.fits 2>&1 | tee valgrind.log
-
-define outputdir
-$(if $(findstring ngts10,$(shell hostname)),/local/srw/synthetic-testdata,.)
-endef
 
 .PHONY: clean test gdb
