@@ -14,6 +14,7 @@
 #include <fstream>
 #include <sqlite3.h>
 #include <batman.h>
+#include <sys/stat.h>
 
 /* Local includes */
 #include "timer.h"
@@ -51,6 +52,15 @@ struct ConfigContainer {
 template <typename T>
 T square(T val) {
     return val * val;
+}
+
+/* Function to check that a file exists 
+ *
+ * Taken from http://stackoverflow.com/a/12774387/56711
+ * */
+inline bool path_exists (const std::string& name) {
+    struct stat buffer;
+    return (stat (name.c_str(), &buffer) == 0);
 }
 
 const double jd_ref = 2456658.500000;
@@ -545,6 +555,19 @@ int main(int argc, char *argv[]) {
         TCLAP::ValueArg<string> candidates_arg("c", "candidates", "Input candidates file", true, "", "SQLite3 database", cmd);
         TCLAP::ValueArg<string> output_arg("o", "output", "Output file", false, "output.fits", "Fits file", cmd);
         cmd.parse(argc, argv);
+
+        vector<string> input_files = {
+            infile_arg.getValue(),
+            candidates_arg.getValue(),
+        };
+
+        for (auto filename: input_files) {
+            if (!path_exists(filename)) {
+                stringstream ss;
+                ss << "Cannot find file " << filename;
+                throw runtime_error(ss.str());
+            }
+        }
 
         Timer ts;
         ts.start("all");
