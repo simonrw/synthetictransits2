@@ -629,6 +629,7 @@ int main(int argc, char *argv[]) {
         }
 
         cout << "Inserting " << valid_nextra << " valid extra models (found " << nextra << " in total)" << endl;
+        cout << "Copying data file" << endl;
 
         for (int hdu = 2; hdu <= nhdus; ++hdu) {
             int status = 0;
@@ -744,6 +745,8 @@ int main(int argc, char *argv[]) {
         map<string, unsigned int> ObjectNames = extract_object_names(infile, nrows);
 
         long counter = 0;
+
+        cout << "Synthesising lightcurves" << endl;
 
         for (vector<Model>::const_iterator itr = valid_models.begin();
                 itr != valid_models.end();
