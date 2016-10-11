@@ -16,6 +16,6 @@ else:
     if os.path.isdir('/Volumes/Extra'):
         print('/Volumes/Extra/NGTS/synthetic-transits/testdata')
     elif os.path.isdir('/Volumes/External'):
-        raise NotImplementedError
+        print('/Volumes/External/synthetic-transits')
     else:
         raise OSError('Cannot find test data directory')
