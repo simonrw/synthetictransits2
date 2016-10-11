@@ -623,6 +623,11 @@ int main(int argc, char *argv[]) {
         vector<Model> valid_models = compute_valid_extra_models(models, infile);
         int valid_nextra = valid_models.size();
 
+        if (valid_nextra == 0) {
+            cerr << "No valid models found to insert. Exiting" << endl;
+            return 1;
+        }
+
         cout << "Inserting " << valid_nextra << " valid extra models (found " << nextra << " in total)" << endl;
 
         for (int hdu = 2; hdu <= nhdus; ++hdu) {
