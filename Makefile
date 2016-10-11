@@ -42,6 +42,10 @@ test: $(RUN)
 	$(RUN) -o $(outputdir)/out-test.fits -c $(testdatadir)/MODELS_NG0522-2518_802_2016_TEST16.db \
 		-i $(testdatadir)/NG0522-2518.fits
 
+singleobjecttest: $(RUN)
+	$(RUN) -o $(outputdir)/out-test.fits -c $(testdatadir)/single_object.db \
+		-i $(testdatadir)/NG0522-2518.fits
+
 gdb: $(RUN)
 	gdb --args $(RUN) -o $(outputdir)/out-gdb.fits -c $(testdatadir)/MODELS_NG0522-2518_802_2016_TEST16.db \
 		-i $(testdatadir)/NG0522-2518.fits
