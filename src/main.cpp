@@ -556,9 +556,9 @@ int main(int argc, char *argv[]) {
         TCLAP::ValueArg<string> output_arg("o", "output", "Output file", false, "output.fits", "Fits file", cmd);
         cmd.parse(argc, argv);
 
-        vector<string> input_files = {
+        string input_files[] = {
             infile_arg.getValue(),
-            candidates_arg.getValue(),
+            candidates_arg.getValue()
         };
 
         for (auto filename: input_files) {
