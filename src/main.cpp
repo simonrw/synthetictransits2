@@ -445,81 +445,6 @@ bool is_any_of(InputIt first, InputIt last, UnaryPredicate p) {
     return std::find_if(first, last, p) != last;
 }
 
-
-/* A lightcurve is valid if 70% of the flux points are positive
- */
-bool valid_lightcurve(const vector<double> &hjd, const vector<double> &flux,
-        double width_seconds, double period_days, double epoch_days) {
-
-    int lc_size = flux.size();
-    // First check the flux values
-    int nvalid_points = std::count_if(flux.begin(), flux.end(), [](const double f) {
-                return f > 0.0;
-            });
-
-    if ((float(nvalid_points) / float(lc_size)) < 0.7) {
-        return false;
-    }
-
-    // If this is ok, make sure there is at least some data during the transit
-    double epoch_seconds = jd2wd(epoch_days);
-    double period_seconds = period_days * secondsInDay;
-    double width_in_phase = width_seconds / period_seconds;
-
-    int npoints_in_transit = 0;
-    for (size_t i=0; i<hjd.size(); i++) {
-        double phase = fmod((hjd[i] - epoch_seconds) / period_seconds, 1);
-
-        if ((phase >= -width_in_phase / 2.) && (phase <= width_in_phase / 2.)) {
-            npoints_in_transit++;
-        }
-    }
-
-    /* around 3 hours of data must exist in transit */
-    if (npoints_in_transit < 1000) {
-        return false;
-    }
-
-    return true;
-}
-
-vector<Model> compute_valid_extra_models(const vector<Model> &models, ReadOnlyFits &infile) {
-    vector<Model> out;
-
-    long nrows;
-    map<string, unsigned int> object_names = extract_object_names(infile, nrows);
-
-    infile.moveHDU("FLUX");
-    long naxes[2];
-    fits_get_img_size(*infile.fptr(), 2, naxes, &infile.status());
-    infile.check();
-
-    vector<double> hjd_buffer(naxes[0]), flux_buffer(naxes[0]);
-    for (auto itr=models.begin(); itr!=models.end(); itr++) {
-        auto object_name = sanitise_object_name(itr->name);
-
-        /* Get the index of the original lightcurve */
-        unsigned int SourceIndex = object_names[object_name];
-
-        infile.moveHDU("HJD");
-        fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0],
-                0, &hjd_buffer[0], 0, &infile.status());
-        infile.check();
-
-        infile.moveHDU("FLUX");
-        fits_read_img(*infile.fptr(), TDOUBLE, (SourceIndex * naxes[0]) + 1, naxes[0], 0, &flux_buffer[0], 0, &infile.status());
-        infile.check();
-
-        double transit_width = WidthFromParams(*itr);
-
-        if (valid_lightcurve(hjd_buffer, flux_buffer, transit_width, itr->period, itr->epoch)) {
-            out.push_back(*itr);
-        }
-    }
-
-    return out;
-}
-
 vector<double> generate_model(const vector<double> &hjd, const Model &model) {
     // Stellar radius in metres
     double stellar_radius = model.rs * rSun;
@@ -640,18 +565,7 @@ int main(int argc, char *argv[]) {
             throw runtime_error("No input models found");
         }
 
-        /* Some lightcurves have no data, so compute the new number of extra
-         * objects */
-        cout << "Computing the list of valid lightcurves" << endl;
-        vector<Model> valid_models = compute_valid_extra_models(models, infile);
-        int valid_nextra = valid_models.size();
-
-        if (valid_nextra == 0) {
-            cerr << "No valid models found to insert. Exiting" << endl;
-            return 1;
-        }
-
-        cout << "Inserting " << valid_nextra << " valid extra models (found " << nextra << " in total)" << endl;
+        cout << "Inserting " << nextra << " valid extra models" << endl;
         cout << "Copying data file" << endl;
 
         for (int hdu = 2; hdu <= nhdus; ++hdu) {
@@ -681,7 +595,7 @@ int main(int argc, char *argv[]) {
                 fits_get_img_type(*outfile.fptr(), &bitpix, &outfile.status());
                 outfile.check();
 
-                long newnaxes[] = {naxes[0], naxes[1] + valid_nextra};
+                long newnaxes[] = {naxes[0], naxes[1] + nextra};
 
                 fits_resize_img(*outfile.fptr(), bitpix, 2, newnaxes, &outfile.status());
                 outfile.check();
@@ -705,10 +619,10 @@ int main(int argc, char *argv[]) {
 
                     /* Append extra rows */
 
-                    fits_insert_rows(*outfile.fptr(), nrows, valid_nextra, &outfile.status());
+                    fits_insert_rows(*outfile.fptr(), nrows, nextra, &outfile.status());
                     outfile.check();
 
-                    cout << " -> " << nrows + valid_nextra << " rows";
+                    cout << " -> " << nrows + nextra << " rows";
 
                     /* Need 9 extra columns */
 
@@ -771,13 +685,13 @@ int main(int argc, char *argv[]) {
 
         cout << "Synthesising lightcurves" << endl;
 
-        for (vector<Model>::const_iterator itr = valid_models.begin();
-                itr != valid_models.end();
+        for (vector<Model>::const_iterator itr = models.begin();
+                itr != models.end();
                 itr++) {
             const Model Current = *itr;
 
             stringstream ss;
-            ss << counter + 1 << "/" << valid_nextra << ": " << Current.name;
+            ss << counter + 1 << "/" << nextra << ": " << Current.name;
             OverPrint(ss.str());
 
             /* Location to write the data to */
